@@ -57,7 +57,7 @@ export default function Login() {
   }
 
   return (
-    <div className="flex items-center justify-center py-12 px-4">
+    <div className="flex items-center justify-center py-12 px-4 bg-gray-50">
       <div className="w-full max-w-md bg-white rounded-lg shadow-md">
         <div className="px-8 py-6">
           <h2 className="text-2xl font-bold text-center text-gray-900">Welcome back</h2>
@@ -88,9 +88,9 @@ export default function Login() {
                 onChange={handleChange}
                 disabled={loading}
                 placeholder="Enter your email"
-                className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm shadow-sm placeholder-gray-400
+                className="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-sm shadow-sm placeholder-gray-400
                           focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500
-                          disabled:bg-gray-50 disabled:text-gray-500 disabled:border-gray-200"
+                          disabled:bg-gray-100 disabled:text-gray-500 disabled:border-gray-200"
               />
             </div>
 
@@ -109,9 +109,9 @@ export default function Login() {
                   onChange={handleChange}
                   disabled={loading}
                   placeholder="Enter your password"
-                  className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm shadow-sm placeholder-gray-400
+                  className="block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-sm shadow-sm placeholder-gray-400
                             focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500
-                            disabled:bg-gray-50 disabled:text-gray-500 disabled:border-gray-200"
+                            disabled:bg-gray-100 disabled:text-gray-500 disabled:border-gray-200"
                 />
                 <button
                   type="button"
