@@ -50,7 +50,7 @@ const Header = () => {
             )}
 
             {/* Logo Section */}
-            <Link href="/" className="flex-shrink-0 flex items-center">
+            <Link href="/dashboard" className="flex-shrink-0 flex items-center">
               <div className="h-8 w-8 bg-blue-600 rounded-md flex items-center justify-center">
                 <span className="text-white font-bold">BH</span>
               </div>

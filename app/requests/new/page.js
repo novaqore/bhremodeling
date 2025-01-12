@@ -1,11 +1,19 @@
 "use client"
-import { useState } from 'react'
+import { useApp } from '@/contexts/AppContext'
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 export default function NewRequest() {
+  const { user } = useApp()
   const [amount, setAmount] = useState('')
   const [multiplier, setMultiplier] = useState('')
   const [checkAmount, setCheckAmount] = useState('')
   const bankFeePercentage = 1 // Fixed at 1%
+  const router = useRouter()
+  
+  useEffect(()=> {
+    if(!user) router.push('/login')
+  })
 
   const calculateFinalAmount = () => {
     if (!amount || !multiplier) {
