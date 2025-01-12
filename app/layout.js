@@ -11,10 +11,10 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body>
+      <body className="bg-gray-100">
         <AppProvider>
         <Header />
-        <main className="pt-10 mx-auto">
+        <main className="mx-auto">
           {children}
         </main>
         </AppProvider>
