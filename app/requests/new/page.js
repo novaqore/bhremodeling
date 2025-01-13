@@ -1,335 +1,293 @@
 "use client"
-import { useApp } from '@/contexts/AppContext'
-import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { db } from '@/lib/firebase/init'
+import { ref, onValue, push, update } from 'firebase/database'
+import { useRouter } from 'next/navigation'
+import { 
+    Building2, 
+    DollarSign, 
+    Percent, 
+    AlertCircle,
+    CheckCircle,
+    LineChart,
+    Wallet
+} from 'lucide-react'
 
 export default function NewRequest() {
-  const { user, companies } = useApp()
-  const [clientType, setClientType] = useState('existing')
-  const [selectedCompany, setSelectedCompany] = useState('')
-  const [customCompanyName, setCustomCompanyName] = useState('')
-  const [multiplier, setMultiplier] = useState('3')
-  const [amount, setAmount] = useState('')
-  const [checkAmount, setCheckAmount] = useState('')
-  const bankFeePercentage = 1
-  const router = useRouter()
+    const router = useRouter()
+    const [companies, setCompanies] = useState({})
+    const [selectedCompany, setSelectedCompany] = useState('')
+    const [requestAmount, setRequestAmount] = useState('')
+    const [checkAmount, setCheckAmount] = useState('')
+    const [cashDate, setCashDate] = useState('immediate')
 
-  useEffect(()=> {
-    if(!user) router.push('/login')
-  })
+    useEffect(() => {
+        const companiesRef = ref(db, 'companies')
+        const unsubscribe = onValue(companiesRef, (snapshot) => {
+            if (snapshot.exists()) {
+                setCompanies(snapshot.val())
+            }
+        })
+        return () => unsubscribe()
+    }, [])
 
-  useEffect(() => {
-    if (clientType === 'existing' && selectedCompany) {
-      setMultiplier(companies[selectedCompany].multiplier.toString())
-    } else if (clientType === 'new') {
-      setMultiplier('3')
-      setSelectedCompany('')
-    }
-  }, [clientType, selectedCompany])
-
-  const calculateFinalAmount = () => {
-    if (!amount || !multiplier) {
-      return {
-        grossAmount: 0,
-        fee: 0,
-        customerPayout: 0,
-        bankFee: 0,
-        profit: 0,
-        isFeeIncluded: false,
-        discrepancies: {}
-      }
-    }
-    
-    const numAmount = parseFloat(amount)
-    const numMultiplier = parseFloat(multiplier)
-    const numCheckAmount = parseFloat(checkAmount || 0)
-    
-    if (numMultiplier >= 100 || isNaN(numAmount) || isNaN(numMultiplier)) {
-      return {
-        grossAmount: 0,
-        fee: 0,
-        customerPayout: 0,
-        bankFee: 0,
-        profit: 0,
-        isFeeIncluded: false,
-        discrepancies: {}
-      }
+    const calculateFee = () => {
+        if (!selectedCompany || !companies[selectedCompany]) return 0
+        const amount = parseFloat(requestAmount) || 0
+        const multiplier = companies[selectedCompany]?.multiplier || 0
+        return amount * multiplier
     }
 
-    const grossAmount = (numAmount * 100) / (100 - numMultiplier)
-    const fee = grossAmount - numAmount
-    const bankFee = (numCheckAmount * bankFeePercentage) / 100
-    
-    const expectedCheckWithFee = numAmount + fee
-    const expectedCheckWithoutFee = numAmount
-    
-    const diffWithFee = Math.abs(numCheckAmount - expectedCheckWithFee)
-    const diffWithoutFee = Math.abs(numCheckAmount - expectedCheckWithoutFee)
-    const isFeeIncluded = diffWithFee < diffWithoutFee
-    
-    const discrepancies = {}
-    const expectedCheck = isFeeIncluded ? expectedCheckWithFee : expectedCheckWithoutFee
-    if (Math.abs(numCheckAmount - expectedCheck) > 0.01) {
-      discrepancies.check = {
-        expected: expectedCheck,
-        actual: numCheckAmount,
-        difference: numCheckAmount - expectedCheck
-      }
-    }
-    
-    const customerPayout = isFeeIncluded ? numAmount : numAmount - fee
+    const fee = calculateFee()
+    const bankFee = (parseFloat(checkAmount) || 0) * 0.01
+    const feeIncludedInCheck = parseFloat(checkAmount) > parseFloat(requestAmount)
+    const customerPayout = feeIncludedInCheck
+        ? parseFloat(requestAmount) || 0
+        : (parseFloat(requestAmount) || 0) - fee
     const profit = fee - bankFee
 
-    return {
-      grossAmount,
-      fee,
-      customerPayout,
-      bankFee,
-      profit,
-      isFeeIncluded,
-      discrepancies
+    const expectedAmount = feeIncludedInCheck 
+        ? parseFloat(requestAmount) + fee 
+        : parseFloat(requestAmount)
+    
+    const discrepancy = (parseFloat(checkAmount) || 0) - expectedAmount
+    const hasDiscrepancy = Math.abs(discrepancy) > 0.01 && checkAmount !== ''
+
+    const isValidRequest = () => {
+        return selectedCompany !== '' && 
+               requestAmount !== '' && 
+               checkAmount !== '' &&
+               parseFloat(requestAmount) > 0 &&
+               parseFloat(checkAmount) > 0 &&
+               cashDate !== ''
     }
-  }
 
-  const calculations = calculateFinalAmount()
+    const handleSubmit = async () => {
+        if (!isValidRequest()) return
 
-  return (
-    <div className="p-4 min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6 text-gray-900">New Request</h1>
-        
-        <div className="flex flex-col lg:flex-row lg:space-x-8">
-          {/* Left Column - Form Inputs */}
-          <div className="lg:w-1/2">
-            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm space-y-6">
-              {/* Client Type Selection */}
-              <div className="inline-flex p-1 bg-gray-100 rounded-md">
-                <button
-                  onClick={() => setClientType('existing')}
-                  className={`px-4 py-2 rounded-md text-sm font-medium ${
-                    clientType === 'existing'
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-700 hover:text-gray-900'
-                  }`}
-                >
-                  Existing Client
-                </button>
-                <button
-                  onClick={() => setClientType('new')}
-                  className={`px-4 py-2 rounded-md text-sm font-medium ${
-                    clientType === 'new'
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-700 hover:text-gray-900'
-                  }`}
-                >
-                  New Client
-                </button>
-              </div>
+        const requestData = {
+            company: selectedCompany,
+            companyName: companies[selectedCompany]?.companyName,
+            requestAmount,
+            checkAmount,
+            fee,
+            bankFee,
+            feeIncludedInCheck,
+            customerPayout,
+            profit,
+            discrepancy,
+            cashDate,
+            createdAt: new Date().toISOString(),
+            status: 'pending'
+        }
 
-              {clientType === 'existing' ? (
-                <div className="space-y-4">
-                  <div>
-                    <label htmlFor="company" className="block text-sm font-medium text-gray-700 mb-2">
-                      Select Company
-                    </label>
-                    <select
-                      id="company"
-                      value={selectedCompany}
-                      onChange={(e) => setSelectedCompany(e.target.value)}
-                      className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-gray-900
-                                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    >
-                      <option value="" disabled>Choose a company...</option>
-                      {Object.entries(companies).map(([id, company]) => (
-                        <option key={id} value={id}>
-                          {company.companyName} ({company.multiplier}%)
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label htmlFor="multiplier" className="block text-sm font-medium text-gray-700 mb-2">
-                      Multiplier (%)
-                    </label>
-                    <input
-                      type="number"
-                      id="multiplier"
-                      name="multiplier"
-                      value={multiplier}
-                      disabled={true}
-                      className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-gray-900"
-                    />
-                  </div>
+        try {
+            // Push the request to get a new key
+            const newRequestRef = push(ref(db, 'requests/'))
+            
+            // Update the request with its own key
+            await update(ref(db, `requests/${newRequestRef.key}`), {
+                ...requestData,
+                id: newRequestRef.key
+            })
+
+            // Navigate to the request details page
+            router.push(`/requests/${newRequestRef.key}`)
+        } catch (error) {
+            console.error('Error submitting request:', error)
+        }
+    }
+
+    return (
+        <div className="min-h-screen bg-gray-100 p-8">
+            <div className="max-w-7xl mx-auto">
+                <h1 className="text-2xl font-bold text-gray-900 mb-8">New Request</h1>
+                
+                <div className="grid lg:grid-cols-2 gap-8">
+                    {/* Left Column - Inputs */}
+                    <div className="bg-white rounded-xl p-6 shadow-sm">
+                        <div className="space-y-6">
+                            {/* Company Select */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-900 mb-2">
+                                    <div className="flex items-center">
+                                        <Building2 className="w-4 h-4 mr-2 text-gray-500" />
+                                        Select Company
+                                    </div>
+                                </label>
+                                <select
+                                    value={selectedCompany}
+                                    onChange={(e) => setSelectedCompany(e.target.value)}
+                                    className="w-full p-3 rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                >
+                                    <option value="">Choose a company...</option>
+                                    {Object.entries(companies).map(([id, company]) => (
+                                        <option key={id} value={id}>
+                                            {company.companyName} ({(company.multiplier * 100).toFixed(1)}%)
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Request Amount */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-900 mb-2">
+                                    <div className="flex items-center">
+                                        <DollarSign className="w-4 h-4 mr-2 text-gray-500" />
+                                        Request Amount
+                                    </div>
+                                </label>
+                                <input
+                                    type="text"
+                                    value={requestAmount}
+                                    onChange={(e) => setRequestAmount(e.target.value)}
+                                    placeholder="Enter amount"
+                                    className="w-full p-3 rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                />
+                            </div>
+
+                            {/* Check Amount */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-900 mb-2">
+                                    <div className="flex items-center">
+                                        <CheckCircle className="w-4 h-4 mr-2 text-gray-500" />
+                                        Check Amount
+                                    </div>
+                                </label>
+                                <div className="space-y-2">
+                                    <input
+                                        type="text"
+                                        value={checkAmount}
+                                        onChange={(e) => setCheckAmount(e.target.value)}
+                                        placeholder="Enter check amount"
+                                        className={`w-full p-3 rounded-lg border ${hasDiscrepancy ? 'border-amber-500' : 'border-gray-300'} bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
+                                    />
+                                    {hasDiscrepancy && (
+                                        <div className="flex items-start gap-2 text-amber-700 text-sm bg-amber-50 p-3 rounded-lg border border-amber-200">
+                                            <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                                            <div>
+                                                <p>Check amount discrepancy detected</p>
+                                                <p>Expected: ${expectedAmount.toFixed(2)}</p>
+                                                <p>Difference: ${discrepancy.toFixed(2)}</p>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Cash Date */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-900 mb-2">
+                                    <div className="flex items-center">
+                                        <LineChart className="w-4 h-4 mr-2 text-gray-500" />
+                                        When to Cash Check
+                                    </div>
+                                </label>
+                                <div className="space-y-2">
+                                    <div className="flex gap-4 items-center">
+                                        <label className="flex items-center">
+                                            <input
+                                                type="radio"
+                                                value="immediate"
+                                                checked={cashDate === 'immediate'}
+                                                onChange={(e) => setCashDate(e.target.value)}
+                                                className="mr-2"
+                                            />
+                                            Immediately
+                                        </label>
+                                        <label className="flex items-center">
+                                            <input
+                                                type="radio"
+                                                value="custom"
+                                                checked={cashDate !== 'immediate'}
+                                                onChange={(e) => setCashDate('custom')}
+                                                className="mr-2"
+                                            />
+                                            Set Date
+                                        </label>
+                                    </div>
+                                    
+                                    {cashDate !== 'immediate' && (
+                                        <input
+                                            type="date"
+                                            min={new Date().toISOString().split('T')[0]}
+                                            onChange={(e) => setCashDate(e.target.value)}
+                                            className="w-full mt-2 p-3 rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        />
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Right Column - Results */}
+                    <div className="bg-white rounded-xl p-6 shadow-sm">
+                        <h2 className="text-lg font-semibold text-gray-900 mb-6">Calculation Results</h2>
+                        
+                        <div className="space-y-4">
+                            {/* Processing Fee */}
+                            <div className="flex justify-between items-center p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                <div className="flex items-center gap-2">
+                                    <Percent className="w-4 h-4 text-gray-500" />
+                                    <span className="text-gray-900">Processing Fee</span>
+                                </div>
+                                <span className="font-medium text-gray-900">${fee.toFixed(2)}</span>
+                            </div>
+
+                            {/* Bank Fee */}
+                            <div className="flex justify-between items-center p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                <div className="flex items-center gap-2">
+                                    <Building2 className="w-4 h-4 text-gray-500" />
+                                    <span className="text-gray-900">Bank Fee (1%)</span>
+                                </div>
+                                <span className="font-medium text-gray-900">${bankFee.toFixed(2)}</span>
+                            </div>
+
+                            {/* Fee Status */}
+                            <div className="flex justify-between items-center p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                <div className="flex items-center gap-2">
+                                    <LineChart className="w-4 h-4 text-gray-500" />
+                                    <span className="text-gray-900">Fee Status</span>
+                                </div>
+                                <span className="font-medium text-gray-900">
+                                    {feeIncludedInCheck ? "Included" : "Not included"}
+                                </span>
+                            </div>
+
+                            {/* Customer Payout */}
+                            <div className="flex justify-between items-center p-4 bg-blue-50 rounded-lg border border-blue-200 mt-6">
+                                <div className="flex items-center gap-2">
+                                    <Wallet className="w-5 h-5 text-blue-600" />
+                                    <span className="font-medium text-gray-900">Customer Payout</span>
+                                </div>
+                                <span className="text-lg font-semibold text-blue-600">
+                                    ${customerPayout.toFixed(2)}
+                                </span>
+                            </div>
+
+                            {/* Profit */}
+                            <div className="flex justify-between items-center p-4 bg-green-50 rounded-lg border border-green-200">
+                                <div className="flex items-center gap-2">
+                                    <DollarSign className="w-5 h-5 text-green-600" />
+                                    <span className="font-medium text-gray-900">Profit</span>
+                                </div>
+                                <span className="text-lg font-semibold text-green-600">
+                                    ${profit.toFixed(2)}
+                                </span>
+                            </div>
+
+                            {/* Submit Button */}
+                            <button
+                                onClick={handleSubmit}
+                                className="w-full mt-4 bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                                disabled={!isValidRequest()}
+                            >
+                                Submit Request
+                            </button>
+                        </div>
+                    </div>
                 </div>
-              ) : (
-                <div className="space-y-4">
-                  <div>
-                    <label htmlFor="customCompanyName" className="block text-sm font-medium text-gray-700 mb-2">
-                      Company Name
-                    </label>
-                    <input
-                      type="text"
-                      id="customCompanyName"
-                      value={customCompanyName}
-                      onChange={(e) => setCustomCompanyName(e.target.value)}
-                      className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-gray-900 placeholder-gray-400
-                                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="Enter company name"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="multiplier" className="block text-sm font-medium text-gray-700 mb-2">
-                      Multiplier (%)
-                    </label>
-                    <input
-                      type="number"
-                      id="multiplier"
-                      name="multiplier"
-                      value={multiplier}
-                      onChange={(e) => setMultiplier(e.target.value)}
-                      className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-gray-900 placeholder-gray-400
-                                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="Enter percentage"
-                      step="0.1"
-                      min="0"
-                      max="99.9"
-                    />
-                  </div>
-                </div>
-              )}
-
-              <div>
-                <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-2">
-                  Request Amount
-                </label>
-                <input
-                  type="number"
-                  id="amount"
-                  name="amount"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-gray-900 placeholder-gray-400
-                            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Enter amount"
-                />
-              </div>
-              <div>
-                <label htmlFor="checkAmount" className="block text-sm font-medium text-gray-700 mb-2">
-                  Check Amount
-                </label>
-                <input
-                  type="number"
-                  id="checkAmount"
-                  name="checkAmount"
-                  value={checkAmount}
-                  onChange={(e) => setCheckAmount(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-gray-900 placeholder-gray-400
-                            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Enter check amount"
-                />
-                {calculations.discrepancies.check && (
-                  <p className="mt-1 text-sm text-amber-600">
-                    ${Math.abs(calculations.discrepancies.check.difference).toFixed(2)} discrepancy found in check amount 
-                    (expected: ${calculations.discrepancies.check.expected.toFixed(2)})
-                  </p>
-                )}
-              </div>
-              <div>
-                <label htmlFor="bankFee" className="block text-sm font-medium text-gray-700 mb-2">
-                  Bank Fee (%)
-                </label>
-                <input
-                  type="number"
-                  id="bankFee"
-                  name="bankFee"
-                  value={bankFeePercentage}
-                  disabled
-                  className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-gray-500"
-                />
-              </div>
             </div>
-          </div>
-
-          {/* Right Column - Transaction Details */}
-          <div className="lg:w-1/2 mt-6 lg:mt-0">
-            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-              <h2 className="text-lg font-semibold mb-4 text-gray-900">Transaction Details</h2>
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Company:</span>
-                  <span className="font-medium text-gray-900">
-                    {clientType === 'new' ? 
-                      (customCompanyName || 'New Client') : 
-                      (selectedCompany ? companies[selectedCompany].companyName : 'Choose a company...')}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Request Amount:</span>
-                  <span className="font-medium text-gray-900">
-                    ${amount ? parseFloat(amount).toFixed(2) : '0.00'}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Processing Fee:</span>
-                  <span className="font-medium text-gray-900">${calculations.fee.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Check Amount:</span>
-                  <span className="font-medium text-gray-900">
-                    ${checkAmount ? parseFloat(checkAmount).toFixed(2) : '0.00'}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Bank Fee:</span>
-                  <span className="font-medium text-gray-900">${calculations.bankFee.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Fee Status:</span>
-                  <span className="font-medium text-gray-900">
-                    {checkAmount ? (calculations.isFeeIncluded ? 'Fee included in check' : 'Fee not included in check') : '-'}
-                  </span>
-                </div>
-                <div className="flex flex-col pt-3 border-t border-gray-200 space-y-2 mt-2">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Customer Payout:</span>
-                    <span className="font-semibold text-blue-600">${calculations.customerPayout.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Profit:</span>
-                    <span className="font-semibold text-green-600">${calculations.profit.toFixed(2)}</span>
-                  </div>
-                </div>
-                <div className="mt-6 pt-4 border-t border-gray-200">
-                  <button
-                    onClick={() => {
-                      const requestObject = {
-                        clientType,
-                        companyName: clientType === 'new' ? customCompanyName : companies[selectedCompany]?.companyName,
-                        multiplier: parseFloat(multiplier),
-                        requestAmount: parseFloat(amount),
-                        checkAmount: parseFloat(checkAmount),
-                        bankFee: calculations.bankFee,
-                        processingFee: calculations.fee,
-                        customerPayout: calculations.customerPayout,
-                        profit: calculations.profit,
-                        isFeeIncluded: calculations.isFeeIncluded,
-                        discrepancies: calculations.discrepancies
-                      }
-                      console.log('New Request:', requestObject)
-                    }}
-                    className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 
-                             focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 
-                             transition-colors disabled:bg-gray-400"
-                    disabled={!amount || !multiplier || !checkAmount || (clientType === 'new' && !customCompanyName) || (clientType === 'existing' && !selectedCompany)}
-                  >
-                    Submit Request
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
-      </div>
-    </div>
-  )
+    )
 }

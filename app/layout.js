@@ -13,8 +13,8 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className="bg-gray-100">
         <AppProvider>
-        {/* <Header /> */}
-        <main className="mx-auto">
+        <Header />
+        <main className="mx-auto pt-10">
           {children}
         </main>
         </AppProvider>
