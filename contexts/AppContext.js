@@ -11,6 +11,12 @@ export const AppProvider = ({ children }) => {
   const [user, setUser] = useState({});
   const [ loading, setLoading ] = useState(true);
 
+  const companies = {
+    "-abc123": { companyName: "GT Remodling Inc", multiplier: 4 },
+    "-def456": { companyName: "Laor Marketing Solutions GT", multiplier: 3 }
+  }
+  
+
   useEffect(() => {
     setLoading(true);
     const unsubAuth = onAuthStateChanged(auth, async (currentUser) => {
@@ -24,7 +30,7 @@ export const AppProvider = ({ children }) => {
   }, []);
 
 
-  const value = { user, loading };
+  const value = { user, loading, companies };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };

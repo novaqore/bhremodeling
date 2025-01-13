@@ -4,45 +4,29 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 export default function NewRequest() {
-  const { user } = useApp()
+  const { user, companies } = useApp()
   const [clientType, setClientType] = useState('existing')
   const [selectedCompany, setSelectedCompany] = useState('')
   const [customCompanyName, setCustomCompanyName] = useState('')
-  const [multiplier, setMultiplier] = useState('0')
+  const [multiplier, setMultiplier] = useState('3')
   const [amount, setAmount] = useState('')
   const [checkAmount, setCheckAmount] = useState('')
   const bankFeePercentage = 1
   const router = useRouter()
 
-  const companies = {
-    "-abc123": { companyName: "GT Remodling Inc", multiplier: 4 },
-    "-def456": { companyName: "Laor Marketing Solutions GT", multiplier: 3 }
-  }
-  
   useEffect(()=> {
     if(!user) router.push('/login')
   })
 
   useEffect(() => {
-    // Clear ALL states when client type changes
-    setMultiplier('0')
-    setSelectedCompany('')
-    setCustomCompanyName('')
-    setAmount('')
-    setCheckAmount('')
-    
-    // Then if it's new client, clear multiplier completely
-    if (clientType === 'new') {
-      setMultiplier('')
-    }
-  }, [clientType])
-  
-  useEffect(() => {
-    // Only set multiplier from company selection if we're in existing client mode
     if (clientType === 'existing' && selectedCompany) {
       setMultiplier(companies[selectedCompany].multiplier.toString())
+    } else if (clientType === 'new') {
+      setMultiplier('3')
+      setSelectedCompany('')
     }
-  }, [selectedCompany, clientType])
+  }, [clientType, selectedCompany])
+
   const calculateFinalAmount = () => {
     if (!amount || !multiplier) {
       return {
@@ -314,6 +298,32 @@ export default function NewRequest() {
                     <span className="text-gray-600">Profit:</span>
                     <span className="font-semibold text-green-600">${calculations.profit.toFixed(2)}</span>
                   </div>
+                </div>
+                <div className="mt-6 pt-4 border-t border-gray-200">
+                  <button
+                    onClick={() => {
+                      const requestObject = {
+                        clientType,
+                        companyName: clientType === 'new' ? customCompanyName : companies[selectedCompany]?.companyName,
+                        multiplier: parseFloat(multiplier),
+                        requestAmount: parseFloat(amount),
+                        checkAmount: parseFloat(checkAmount),
+                        bankFee: calculations.bankFee,
+                        processingFee: calculations.fee,
+                        customerPayout: calculations.customerPayout,
+                        profit: calculations.profit,
+                        isFeeIncluded: calculations.isFeeIncluded,
+                        discrepancies: calculations.discrepancies
+                      }
+                      console.log('New Request:', requestObject)
+                    }}
+                    className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 
+                             focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 
+                             transition-colors disabled:bg-gray-400"
+                    disabled={!amount || !multiplier || !checkAmount || (clientType === 'new' && !customCompanyName) || (clientType === 'existing' && !selectedCompany)}
+                  >
+                    Submit Request
+                  </button>
                 </div>
               </div>
             </div>

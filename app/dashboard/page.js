@@ -3,6 +3,7 @@ import { useApp } from "@/contexts/AppContext"
 import { useRouter } from "next/navigation"
 import { useEffect } from "react"
 import Link from "next/link"
+import { Building2, PlusCircle, FileSpreadsheet, DollarSign, PiggyBank } from 'lucide-react'
 
 export default function Dashboard() {
   const router = useRouter()
@@ -24,32 +25,51 @@ export default function Dashboard() {
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-          <Link
-            href="/requests/new"
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-          >
-            Start New Request
-          </Link>
+          <div className="flex gap-4">
+            <Link
+              href="/companies"
+              className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 flex items-center gap-2"
+            >
+              <Building2 size={20} />
+              All Companies
+            </Link>
+            <Link
+              href="/requests/new"
+              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center gap-2"
+            >
+              <PlusCircle size={20} />
+              Start New Request
+            </Link>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {/* Total Requests Card */}
           <div className="bg-white rounded-lg shadow-sm p-6">
-            <h3 className="text-gray-700 text-sm font-medium">Total Requests</h3>
+            <div className="flex items-center gap-2">
+              <FileSpreadsheet className="text-gray-600" size={20} />
+              <h3 className="text-gray-700 text-sm font-medium">Total Requests</h3>
+            </div>
             <p className="text-3xl font-semibold mt-2 text-gray-900">{stats.totalRequests}</p>
             <div className="mt-2 text-sm text-green-600">+12 from last week</div>
           </div>
 
           {/* Total Cash Processed Card */}
           <div className="bg-white rounded-lg shadow-sm p-6">
-            <h3 className="text-gray-700 text-sm font-medium">Total Cash Processed</h3>
+            <div className="flex items-center gap-2">
+              <DollarSign className="text-gray-600" size={20} />
+              <h3 className="text-gray-700 text-sm font-medium">Total Cash Processed</h3>
+            </div>
             <p className="text-3xl font-semibold mt-2 text-gray-900">{stats.totalProcessed}</p>
             <div className="mt-2 text-sm text-green-600">+$5,250 from last week</div>
           </div>
 
           {/* Total Profit Card */}
           <div className="bg-white rounded-lg shadow-sm p-6">
-            <h3 className="text-gray-700 text-sm font-medium">Total Profit</h3>
+            <div className="flex items-center gap-2">
+              <PiggyBank className="text-gray-600" size={20} />
+              <h3 className="text-gray-700 text-sm font-medium">Total Profit</h3>
+            </div>
             <p className="text-3xl font-semibold mt-2 text-gray-900">{stats.totalProfit}</p>
             <div className="mt-2 text-sm text-green-600">+$262.50 from last week</div>
           </div>
@@ -58,7 +78,10 @@ export default function Dashboard() {
         {/* Recent Requests Section */}
         <div className="bg-white rounded-lg shadow-sm">
           <div className="p-6 border-b border-gray-200">
-            <h2 className="text-lg font-medium text-gray-900">Recent Requests</h2>
+            <div className="flex items-center gap-2">
+              <FileSpreadsheet className="text-gray-600" size={20} />
+              <h2 className="text-lg font-medium text-gray-900">Recent Requests</h2>
+            </div>
           </div>
           <div className="divide-y divide-gray-200">
             {/* Example request items - replace with your actual data */}
