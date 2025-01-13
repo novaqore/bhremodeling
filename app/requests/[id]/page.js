@@ -2,20 +2,26 @@
 import { useEffect, useState } from 'react'
 import { use } from 'react'
 import { db } from '@/lib/firebase/init'
-import { ref, onValue } from 'firebase/database'
+import { ref, onValue, remove } from 'firebase/database'
 import { 
     Building2, 
     DollarSign, 
     Percent,
     CheckCircle,
     Clock,
-    Calendar
+    Calendar,
+    Trash2,
+    X
 } from 'lucide-react'
+import { useParams, useRouter } from 'next/navigation'
 
 export default function Request({ params }) {
-    const requestId = use(params).id
+    const requestId = useParams().id
     const [request, setRequest] = useState(null)
     const [loading, setLoading] = useState(true)
+    const [showDeleteModal, setShowDeleteModal] = useState(false)
+    const router = useRouter()
+
 
     useEffect(() => {
         const requestRef = ref(db, `requests/${requestId}`)
@@ -28,6 +34,17 @@ export default function Request({ params }) {
 
         return () => unsubscribe()
     }, [requestId])
+
+    const handleDelete = async () => {
+            try {
+                await remove(ref(db, `requests/${requestId}`))
+                router.push('/dashboard')
+            } catch (error) {
+                console.error('Error deleting company:', error)
+            }
+            setShowDeleteModal(false)
+        }
+
 
     if (loading) {
         return (
@@ -63,13 +80,25 @@ export default function Request({ params }) {
     const { createdDate, cashDate, isCashed } = getTimelineStatus()
 
     return (
+        <>
         <div className="bg-gray-100 p-8">
             <div className="max-w-7xl mx-auto space-y-8">
                 <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-bold text-gray-900">Request Details</h1>
+
+                    <div className='flex flex-row'>
                     <span className="px-4 py-2 rounded-full bg-blue-100 text-blue-800 text-sm font-medium">
                         ID: {requestId}
                     </span>
+                    <button
+                        onClick={() => setShowDeleteModal(true)}
+                        className="flex items-center gap-2 px-6 py-3 text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                        >
+
+                        <Trash2 size={20} />
+                        Delete Company
+                    </button>
+                        </div>
                 </div>
 
                 <div className="grid lg:grid-cols-2 gap-8">
@@ -203,6 +232,42 @@ export default function Request({ params }) {
                     </div>
                 </div>
             </div>
+         
         </div>
+        {showDeleteModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                <div className="bg-white rounded-lg max-w-md w-full p-6 relative">
+                    <button 
+                        onClick={() => setShowDeleteModal(false)}
+                        className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+                    >
+                        <X size={20} />
+                    </button>
+
+                    <div className="mb-6">
+                        <h3 className="text-xl font-semibold text-gray-900 mb-2">Delete Request</h3>
+                        <p className="text-gray-600">
+                            Are you sure you want to delete? This action cannot be undone.
+                        </p>
+                    </div>
+
+                    <div className="flex justify-end gap-4">
+                        <button
+                            onClick={() => setShowDeleteModal(false)}
+                            className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            onClick={handleDelete}
+                            className="px-4 py-2 bg-red-600 text-white hover:bg-red-700 rounded-lg transition-colors"
+                        >
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        )}
+        </>
     )
 }
