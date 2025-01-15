@@ -5,7 +5,7 @@ import { Building2, User } from 'lucide-react'
 
 export default function CompanyInfo({ company }) {
     const handleUpdate = (field, value) => {
-            update(ref(db, `companies/${params.id}`), { [field]: value })
+            update(ref(db, `companies/${company.id}`), { [field]: value })
         }
 
 
