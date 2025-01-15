@@ -49,14 +49,31 @@ export default function FreshRequest() {
         return parseFloat(companies[selectedCompany].kickback || 0)
     }
 
-    const processingFee = parseFloat(requestAmount || 0) * getCurrentMultiplier()
-    const bankFee = parseFloat(checkAmount || 0) * 0.01
-    const customerPayout = (parseFloat(checkAmount) || 0) - processingFee
-    const profit = processingFee - bankFee
-    const requestAmountNum = parseFloat(requestAmount) || 0
-    const kickbackAmount = requestAmountNum * getCurrentKickback()
+    // Calculate all fees and amounts
+    const requestAmountNum = parseFloat(requestAmount || 0)
+    const checkAmountNum = parseFloat(checkAmount || 0)
 
-    const checkAmountNum = parseFloat(checkAmount) || 0
+    // Step 1: Calculate processing fee (request amount × multiplier)
+    const processingFee = requestAmountNum * getCurrentMultiplier()
+    
+    // Step 2: Calculate kickback amount (request amount × kickback rate)
+    const kickbackAmount = requestAmountNum * getCurrentKickback()
+    
+    // Step 3: Remaining amount after kickback
+    const afterKickback = processingFee - kickbackAmount
+    
+    // Step 4: Calculate bank fee (1% of check amount)
+    const bankFee = checkAmountNum * 0.01
+    
+    // Step 5: Final profit (remaining after kickback minus bank fee)
+    const profit = afterKickback - bankFee
+
+    // Step 6: Customer payout
+    const customerPayout = checkAmountNum - processingFee
+
+    // Check amount comparison logic
+    // const requestAmountNum = parseFloat(requestAmount) || 0
+    // const checkAmountNum = parseFloat(checkAmount) || 0
     const expectedWithFee = requestAmountNum + processingFee
     const discrepancy = checkAmountNum - expectedWithFee
     
@@ -77,7 +94,7 @@ export default function FreshRequest() {
     const feeStatus = getFeeStatus()
 
     return (
-        <div className="bg-gray-100 p-8">
+        <div className="min-h-screen bg-gray-100 p-8">
             <div className="max-w-5xl mx-auto">
                 <h1 className="text-2xl font-bold text-gray-900 mb-8">New Request</h1>
                 
@@ -210,6 +227,23 @@ export default function FreshRequest() {
                                 </span>
                             </div>
 
+                            <div className="flex justify-between items-center p-4 bg-purple-50 rounded-lg border border-purple-200">
+                                    <div className="flex items-center gap-2">
+                                        <ArrowLeftRight className="w-5 h-5 text-purple-600" />
+                                        <div className="flex flex-col">
+                                            <span className="font-medium text-gray-900">
+                                                Kickback to {companies[selectedCompany]?.companyName}
+                                            </span>
+                                            <span className="text-sm text-purple-600">
+                                                ({(getCurrentKickback() * 100).toFixed(1)}% of profit)
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <span className="text-lg font-semibold text-purple-600">
+                                        ${kickbackAmount.toFixed(2)}
+                                    </span>
+                                </div>
+
                             {/* Fee Status */}
                             {feeStatus && (
                                 <div className={`flex items-center p-4 rounded-lg border ${
@@ -248,25 +282,7 @@ export default function FreshRequest() {
                                 </span>
                             </div>
 
-                            {/* Kickback */}
-                            {companies[selectedCompany] && (
-                                <div className="flex justify-between items-center p-4 bg-purple-50 rounded-lg border border-purple-200">
-                                    <div className="flex items-center gap-2">
-                                        <ArrowLeftRight className="w-5 h-5 text-purple-600" />
-                                        <div className="flex flex-col">
-                                            <span className="font-medium text-gray-900">
-                                                Kickback to {companies[selectedCompany].companyName}
-                                            </span>
-                                            <span className="text-sm text-purple-600">
-                                                ({(getCurrentKickback() * 100).toFixed(1)}% of profit)
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <span className="text-lg font-semibold text-purple-600">
-                                        ${kickbackAmount.toFixed(2)}
-                                    </span>
-                                </div>
-                            )}
+
                         </div>
                     </div>
                 </div>
