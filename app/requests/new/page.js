@@ -71,9 +71,6 @@ export default function FreshRequest() {
     // Step 6: Customer payout
     const customerPayout = checkAmountNum - processingFee
 
-    // Check amount comparison logic
-    // const requestAmountNum = parseFloat(requestAmount) || 0
-    // const checkAmountNum = parseFloat(checkAmount) || 0
     const expectedWithFee = requestAmountNum + processingFee
     const discrepancy = checkAmountNum - expectedWithFee
     
