@@ -210,7 +210,7 @@ export default function Dashboard() {
             {request && Object.entries(request).map(([id, req]) => (
               <Link 
                 key={id}
-                href={`/transaction/${id.slice(1)}`}
+                href={`/transaction?id=${id.slice(1)}`}
                 className="p-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 hover:bg-gray-50 cursor-pointer"
               >
                 <div>
