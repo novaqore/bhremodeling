@@ -6,16 +6,14 @@ import { db } from '@/lib/firebase/init'
 import { useState, useEffect } from 'react'
 
 export default function CompanyMultipliers({ company }) {
-    const searchParams = useSearchParams()
-    const companyId = searchParams.get('id')
     const [multiplier, setMultiplier] = useState('0')
     const [kickback, setKickback] = useState('0')
 
     useEffect(() => {
         if (company) {
             // Round to prevent floating point issues
-            setMultiplier(company.multiplier ? Math.round(company.multiplier * 1000) / 10 : '')
-            setKickback(company.kickback ? Math.round(company.kickback * 1000) / 10 : '')
+            setMultiplier(company.multiplier ? Math.round(company.multiplier * 1000) / 10 : '0')
+            setKickback(company.kickback ? Math.round(company.kickback * 1000) / 10 : '0')
         }
     }, [company])
 

@@ -1,12 +1,13 @@
 "use client";
-import { useState } from 'react';
-import { Calendar } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Calendar, AlertTriangle } from 'lucide-react';
 import { ref, update } from 'firebase/database';
 import { db } from '@/lib/firebase/init';
 
 const TransactionTimelineCheckCashedDate = ({ request, company }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState('');
+    const [daysUntilCashable, setDaysUntilCashable] = useState(0);
 
     const formatDate = (timestamp) => {
         const date = new Date(timestamp);
@@ -21,15 +22,32 @@ const TransactionTimelineCheckCashedDate = ({ request, company }) => {
         });
     };
 
+    useEffect(() => {
+        if (request.cashDate) {
+            const cashDate = new Date(request.cashDate);
+            const today = new Date();
+            const diffTime = cashDate - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            setDaysUntilCashable(diffDays);
+        }
+    }, [request.cashDate]);
+
     const handleDateSelect = (date) => {
+        const selectedDateTime = new Date(date);
+        const cashDateTime = new Date(request.cashDate);
+
+        if (selectedDateTime < cashDateTime) {
+            return; // Don't allow selection of dates before cashDate
+        }
+
         setSelectedDate(date);
         update(ref(db, `requests/-${request.id}`), {
-            checkCashDate: date
+            checkCashedDate: date
         })
         setIsModalOpen(false);
     };
 
-    const isPending = !request.checkCashDate;
+    const isPending = !request.checkCashedDate;
 
     return (
         <>
@@ -45,11 +63,21 @@ const TransactionTimelineCheckCashedDate = ({ request, company }) => {
                     }`} />
                 </div>
                 <div className="flex-1 pt-2">
-                    <h3 className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors duration-200">Check Cash Date</h3>
+                    <h3 className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors duration-200">Check Cashed Status</h3>
                     <p className="text-sm text-gray-500 mt-1">
-                        {isPending ? 'Pending' : formatDate(request.checkCashDate)}
+                        {isPending ? 'Not yet cashed' : `Cashed on ${formatDate(request.checkCashedDate)}`}
                     </p>
-                    <div className="mt-2 text-sm text-gray-600">Scheduled date for check processing</div>
+                    {daysUntilCashable > 0 && !request.checkCashedDate && (
+                        <div className="mt-2 flex items-center gap-2 text-orange-500 bg-orange-50 px-3 py-2 rounded-md">
+                            <AlertTriangle className="w-4 h-4" />
+                            <span className="text-sm">
+                                Check becomes eligible to cash in {daysUntilCashable} days (on {new Date(request.cashDate).toLocaleDateString()})
+                            </span>
+                        </div>
+                    )}
+                    <div className="mt-2 text-sm text-gray-600">
+                        {request.cashDate && `Eligible to cash from ${formatDate(request.cashDate)}`}
+                    </div>
                 </div>
                 <div className="flex-shrink-0 w-24 pt-2">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -57,7 +85,7 @@ const TransactionTimelineCheckCashedDate = ({ request, company }) => {
                             ? 'bg-gray-100 text-gray-800' 
                             : 'bg-green-100 text-green-800'
                     }`}>
-                        {isPending ? 'Pending' : 'Completed'}
+                        {isPending ? 'Pending' : 'Cashed'}
                     </span>
                 </div>
             </div>
@@ -73,8 +101,8 @@ const TransactionTimelineCheckCashedDate = ({ request, company }) => {
                                     <Calendar className="w-6 h-6 text-blue-500" />
                                 </div>
                                 <div>
-                                    <h3 className="text-xl font-semibold text-gray-900">Check Cash Date</h3>
-                                    <p className="text-sm text-gray-500 mt-1">When was the check cashed?</p>
+                                    <h3 className="text-xl font-semibold text-gray-900">Record Check Cashed Date</h3>
+                                    <p className="text-sm text-gray-500 mt-1">When was the check actually cashed?</p>
                                 </div>
                             </div>
                             <button 
@@ -88,14 +116,22 @@ const TransactionTimelineCheckCashedDate = ({ request, company }) => {
                         {/* Date Input Section */}
                         <div className="mb-8">
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Timestamp
+                                Cashed Date
                             </label>
                             <input
                                 type="datetime-local"
                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                 onChange={(e) => setSelectedDate(e.target.value)}
-                                defaultValue={request.checkCashDate || ''}
+                                defaultValue={request.checkCashedDate || ''}
+                                min={request.cashDate}
                             />
+                            {request.cashDate && (
+                                <div className="mt-2 flex items-center gap-2 text-gray-600">
+                                    <span className="text-sm">
+                                        Must be on or after {new Date(request.cashDate).toLocaleDateString()}
+                                    </span>
+                                </div>
+                            )}
                         </div>
 
                         {/* Actions */}
@@ -109,8 +145,9 @@ const TransactionTimelineCheckCashedDate = ({ request, company }) => {
                             <button
                                 onClick={() => handleDateSelect(selectedDate)}
                                 className="px-5 py-2.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium flex items-center gap-2"
+                                disabled={!selectedDate || new Date(selectedDate) < new Date(request.cashDate)}
                             >
-                                Update Timeline
+                                Update Cashed Date
                             </button>
                         </div>
                     </div>
