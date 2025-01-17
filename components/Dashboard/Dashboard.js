@@ -1,12 +1,112 @@
 "use client"
 import { useAuth } from '@/contexts/auth';
+import { db } from '@/lib/firebase/init';
+import { onValue, ref, set } from 'firebase/database';
 import { Building2, PlusCircle, FileSpreadsheet, DollarSign, Building, ChevronLeft, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function Dashboard() {
   const { user, loading } = useAuth();
+  const [ request, setRequest ] = useState(null)
+  const [ loadingRequest, setLoadingRequest ] = useState(true)
+  const [ requestStats, setRequestStats ] = useState({ total: 0, today: 0 })
+  const [ kickbackStats, setKickbackStats ] = useState({ total: 0, today: 0 })
+  const [ profitStats, setProfitStats ] = useState({ total: 0, today: 0 })
+  const [ processedStats, setProcessedStats ] = useState({ total: 0, today: 0 })
+
+  useEffect(() => {
+    setLoadingRequest(true)
+    const requestRef = ref(db, `requests`)
+    const unsubscribe = onValue(requestRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val()
+        setRequest(data)
+        
+        // Calculate request statistics
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+        
+        const stats = Object.values(data).reduce((acc, req) => {
+          acc.total++
+          
+          const requestDate = new Date(req.created_at)
+          requestDate.setHours(0, 0, 0, 0)
+          
+          if (requestDate.getTime() === today.getTime()) {
+            acc.today++
+          }
+          
+          return acc
+        }, { total: 0, today: 0 })
+        
+        // Calculate kickback statistics
+        const kickback = Object.values(data).reduce((acc, req) => {
+          const kickbackFee = Number(req.kickbackFee) || 0
+          acc.total += kickbackFee
+          
+          const requestDate = new Date(req.created_at)
+          requestDate.setHours(0, 0, 0, 0)
+          
+          if (requestDate.getTime() === today.getTime()) {
+            acc.today += kickbackFee
+          }
+          
+          return acc
+        }, { total: 0, today: 0 })
+
+        // Calculate profit statistics
+        const profit = Object.values(data).reduce((acc, req) => {
+          const profitAmount = Number(req.profit) || 0
+          acc.total += profitAmount
+          
+          const requestDate = new Date(req.created_at)
+          requestDate.setHours(0, 0, 0, 0)
+          
+          if (requestDate.getTime() === today.getTime()) {
+            acc.today += profitAmount
+          }
+          
+          return acc
+        }, { total: 0, today: 0 })
+        
+        setRequestStats(stats)
+        setKickbackStats(kickback)
+        // Calculate processed statistics
+        const processed = Object.values(data).reduce((acc, req) => {
+          const checkAmount = Number(req.checkAmount) || 0
+          acc.total += checkAmount
+          
+          const requestDate = new Date(req.created_at)
+          requestDate.setHours(0, 0, 0, 0)
+          
+          if (requestDate.getTime() === today.getTime()) {
+            acc.today += checkAmount
+          }
+          
+          return acc
+        }, { total: 0, today: 0 })
+
+        setRequestStats(stats)
+        setKickbackStats(kickback)
+        setProfitStats(profit)
+        setProcessedStats(processed)
+        setLoadingRequest(false)
+      }
+    })
+
+    return () => unsubscribe()
+  }, [])
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(amount)
+  }
 
   if(loading || !user) return null;
 
@@ -35,37 +135,48 @@ export default function Dashboard() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-          <div className="bg-white rounded-lg shadow-sm p-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="bg-blue-50 rounded-lg shadow-sm p-4">
             <div className="flex items-center gap-2">
               <FileSpreadsheet className="text-gray-600" size={18} />
               <h3 className="text-gray-700 text-sm font-medium">Total Requests</h3>
             </div>
-            <p className="text-2xl sm:text-3xl font-semibold mt-2 text-gray-900">0</p>
+            <p className="text-2xl sm:text-3xl font-semibold mt-2 text-gray-900">{requestStats.total}</p>
             <p className="text-sm text-green-600 mt-1">
-              Today: 0
+              Today: +{requestStats.today}
             </p>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm p-4">
+          <div className="bg-purple-50 rounded-lg shadow-sm p-4">
+            <div className="flex items-center gap-2">
+              <DollarSign className="text-gray-600" size={18} />
+              <h3 className="text-gray-700 text-sm font-medium">Kickback Payouts</h3>
+            </div>
+            <p className="text-2xl sm:text-3xl font-semibold mt-2 text-gray-900">{formatCurrency(kickbackStats.total)}</p>
+            <p className="text-sm text-green-600 mt-1">
+              Today: {formatCurrency(kickbackStats.today)}
+            </p>
+          </div>
+
+          <div className="bg-yellow-50 rounded-lg shadow-sm p-4">
             <div className="flex items-center gap-2">
               <DollarSign className="text-gray-600" size={18} />
               <h3 className="text-gray-700 text-sm font-medium">Total Processed</h3>
             </div>
-            <p className="text-2xl sm:text-3xl font-semibold mt-2 text-gray-900">$0.00</p>
+            <p className="text-2xl sm:text-3xl font-semibold mt-2 text-gray-900">{formatCurrency(processedStats.total)}</p>
             <p className="text-sm text-green-600 mt-1">
-              Today: $0.00
+              Today: {formatCurrency(processedStats.today)}
             </p>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm p-4 sm:col-span-2 lg:col-span-1">
+          <div className="bg-green-50 rounded-lg shadow-sm p-4">
             <div className="flex items-center gap-2">
               <Building className="text-gray-600" size={18} />
               <h3 className="text-gray-700 text-sm font-medium">Profit</h3>
             </div>
-            <p className="text-2xl sm:text-3xl font-semibold mt-2 text-gray-900">$0.00</p>
+            <p className="text-2xl sm:text-3xl font-semibold mt-2 text-gray-900">{formatCurrency(profitStats.total)}</p>
             <p className="text-sm text-green-600 mt-1">
-              Today: $0.00
+              Today: {formatCurrency(profitStats.today)}
             </p>
           </div>
         </div>
@@ -96,20 +207,27 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="divide-y divide-gray-200">
-            {/* Example Request Item */}
-            <Link 
-              href="/requests/123"
-              className="p-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 hover:bg-gray-50 cursor-pointer"
-            >
-              <div>
-                <p className="font-medium text-gray-900">Example Company</p>
-                <p className="text-sm text-gray-600">Requested 2h ago</p>
+            {request && Object.entries(request).map(([id, req]) => (
+              <Link 
+                key={id}
+                href={`/transaction/${id.slice(1)}`}
+                className="p-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 hover:bg-gray-50 cursor-pointer"
+              >
+                <div>
+                  <p className="font-medium text-gray-900">{req.company_id}</p>
+                  <p className="text-sm text-gray-600">{new Date(req.created_at).getTime()}</p>
+                </div>
+                <div className="sm:text-right">
+                  <p className="font-medium text-gray-900">{formatCurrency(req.requestAmount || 0)}</p>
+                  <p className="text-sm text-gray-600">Check: {req.checkNumber || 'N/A'}</p>
+                </div>
+              </Link>
+            ))}
+            {(!request || Object.keys(request).length === 0) && (
+              <div className="p-4 text-center text-gray-500">
+                No requests found
               </div>
-              <div className="sm:text-right">
-                <p className="font-medium text-gray-900">$1,000.00</p>
-                <p className="text-sm text-gray-600">Fee: $50.00</p>
-              </div>
-            </Link>
+            )}
           </div>
         </div>
     </div>

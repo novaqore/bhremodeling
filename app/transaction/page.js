@@ -51,16 +51,7 @@ const Request = () => {
             <div className="flex flex-row items-center justify-between gap-2 pb-2">
                 <div className="flex flex-row">
                     <button
-                        onClick={() => {
-                            const previousUrl = document.referrer
-                            if (previousUrl && previousUrl.includes('/company')) {
-                                // If coming from company page, maintain the hash
-                                router.push(`/company?id=${request.company_id.slice(1)}#transactions`)
-                            } else {
-                                // Default to transactions tab if coming from elsewhere
-                                router.push(`/company?id=${request.company_id.slice(1)}#transactions`)
-                            }
-                        }}
+                        onClick={() => router.back()}
                         className="inline-flex items-center text-gray-600 hover:text-gray-900"
                     >
                         <ArrowLeft className="h-5 w-5 mr-2" />
