@@ -31,7 +31,7 @@ export default function Company() {
     const tabs = [
         { id: 'overview', label: 'Overview', icon: Building2 },
         { id: 'transactions', label: 'Transactions', icon: ChartBar },
-        { id: 'subcontractors', label: 'Subcontractors', icon: Users },
+        { id: 'subcontractors', label: 'Sub-Company', icon: Users },
         { id: 'multipliers', label: 'Multipliers', icon: Percent },
         { id: 'settings', label: 'Settings', icon: Settings }
     ]
