@@ -5,20 +5,20 @@ import { db } from '@/lib/firebase/init'
 import { ref, update, push } from 'firebase/database'
 import { useParams } from 'next/navigation'
 
-export default function CompanySubcontractorAdd() {
+export default function CompanySubcontractorAdd({company}) {
     const params = useParams()
     const [showSubModal, setShowSubModal] = useState(false)
     const [tempSub, setTempSub] = useState({
         name: '',
-        multiplier: '',
-        kickback: ''
+        multiplier: '0',
+        kickback: '0'
     })
 
     const openNewSubModal = () => {
         setTempSub({
             name: '',
-            multiplier: '',
-            kickback: ''
+            multiplier: '0',
+            kickback: '0'
         })
         setShowSubModal(true)
     }
@@ -40,7 +40,7 @@ export default function CompanySubcontractorAdd() {
             kickback: tempSub.kickback ? Math.round(parseFloat(tempSub.kickback) * 10) / 1000 : 0
         }
         
-        const newSubRef = push(ref(db, `companies/${params.id}/subcontractors`))
+        const newSubRef = push(ref(db, `companies/${company.id}/subcontractors`))
         await update(newSubRef, {
             ...subDetails,
             id: newSubRef.key
@@ -57,7 +57,7 @@ export default function CompanySubcontractorAdd() {
                 className="flex items-center gap-2 px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
             >
                 <PlusCircle size={20} />
-                Add Subcontractor
+                Add Sub-Company
             </button>
 
             {showSubModal && (
@@ -66,13 +66,13 @@ export default function CompanySubcontractorAdd() {
 
                         <div className="mb-6">
                             <h3 className="text-xl font-semibold text-gray-900 mb-4">
-                                Add Subcontractor
+                                Add Sub-Company
                             </h3>
                             
                             <div className="space-y-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Subcontractor Name
+                                        Sub-Company Name
                                     </label>
                                     <input
                                         type="text"

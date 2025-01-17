@@ -1,0 +1,210 @@
+'use client'
+
+import { useSearchParams } from 'next/navigation'
+import { ArrowRight, CheckCircle2, Clock, Search, ArrowUpDown } from 'lucide-react'
+import Link from 'next/link'
+import { useState, useMemo } from 'react'
+
+export default function CompanyTransactions({ requests }) {
+    const searchParams = useSearchParams()
+    const companyId = searchParams.get('id')
+
+    // State management
+    const [searchTerm, setSearchTerm] = useState('')
+    const [activeFilter, setActiveFilter] = useState('all')
+    const [sortOrder, setSortOrder] = useState('newest') // 'newest' or 'oldest'
+
+    // Filter, search, and sort logic
+    const filteredTransactions = useMemo(() => {
+        if (!requests) return []
+
+        const filtered = Object.entries(requests).filter(([requestId, request]) => {
+            // Filter by status
+            if (activeFilter === 'completed' && !request.isTransactionComplete) return false
+            if (activeFilter === 'pending' && request.isTransactionComplete) return false
+
+            // Search by ID or checkNumber
+            const searchLower = searchTerm.toLowerCase()
+            const idMatch = requestId.toLowerCase().includes(searchLower)
+            const checkMatch = request.checkNumber?.toLowerCase().includes(searchLower)
+
+            return searchLower === '' || idMatch || checkMatch
+        })
+
+        // Sort by date
+        return filtered.sort(([, a], [, b]) => {
+            const dateA = new Date(a.created_at).getTime()
+            const dateB = new Date(b.created_at).getTime()
+            return sortOrder === 'newest' ? dateB - dateA : dateA - dateB
+        })
+    }, [requests, searchTerm, activeFilter, sortOrder])
+
+    // Format date and time
+    const formatDateTime = (timestamp) => {
+        const date = new Date(timestamp)
+        return {
+            date: date.toLocaleDateString(undefined, {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            }),
+            time: date.toLocaleTimeString(undefined, {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true
+            })
+        }
+    }
+
+    // Filter button styling
+    const getFilterButtonClass = (filterType) => {
+        const baseClasses = "px-3 py-1.5 rounded-md transition-colors duration-200"
+        return `${baseClasses} ${
+            activeFilter === filterType 
+                ? "bg-blue-50 text-blue-600 font-medium" 
+                : "text-gray-600 hover:bg-gray-50"
+        }`
+    }
+
+    return (
+        <div className="bg-white shadow-sm rounded-lg border border-gray-200">
+            {/* Header with search and filters */}
+            <div className="px-6 py-5 border-b border-gray-200">
+                <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-2xl font-semibold text-gray-900">Transaction History</h2>
+                    <div className="flex items-center gap-4">
+                        {/* Sort Button */}
+                        <button
+                            onClick={() => setSortOrder(sortOrder === 'newest' ? 'oldest' : 'newest')}
+                            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50"
+                        >
+                            <ArrowUpDown className="h-4 w-4" />
+                            {sortOrder === 'newest' ? 'Newest First' : 'Oldest First'}
+                        </button>
+                        
+                        {/* Search Input */}
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                            <input 
+                                type="text" 
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                placeholder="Search by ID or check number..." 
+                                className="w-64 pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                        </div>
+                    </div>
+                </div>
+                <div className="flex gap-2 text-sm">
+                    <button 
+                        onClick={() => setActiveFilter('all')}
+                        className={getFilterButtonClass('all')}
+                    >
+                        All Transactions
+                    </button>
+                    <button 
+                        onClick={() => setActiveFilter('completed')}
+                        className={getFilterButtonClass('completed')}
+                    >
+                        Completed
+                    </button>
+                    <button 
+                        onClick={() => setActiveFilter('pending')}
+                        className={getFilterButtonClass('pending')}
+                    >
+                        Pending
+                    </button>
+                </div>
+            </div>
+
+            {/* Transaction List */}
+            <div className="px-6 py-4">
+                <div className="space-y-2">
+                    {filteredTransactions.length > 0 ? (
+                        filteredTransactions.map(([requestId, request]) => {
+                            const { date, time } = formatDateTime(request.created_at)
+                            return (
+                                <Link
+                                    key={requestId}
+                                    href={`/transaction?id=${requestId.slice(1)}`}
+                                    className="block group"
+                                >
+                                    <div className="flex items-center justify-between px-4 py-5 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors duration-200">
+                                        <div className="flex items-center gap-6 flex-1">
+                                            {/* Status Icon */}
+                                            <div className="w-12">
+                                                {request.isTransactionComplete ? (
+                                                    <div className="h-8 w-8 rounded-full bg-emerald-50 flex items-center justify-center">
+                                                        <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                                                    </div>
+                                                ) : (
+                                                    <div className="h-8 w-8 rounded-full bg-amber-50 flex items-center justify-center">
+                                                        <Clock className="h-5 w-5 text-amber-600" />
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Transaction Details */}
+                                            <div className="flex flex-col gap-1 flex-1">
+                                                <div className="flex items-center gap-3">
+                                                    <span className="font-medium text-gray-900">
+                                                        {requestId}
+                                                    </span>
+                                                    {request.checkNumber && (
+                                                        <span className="text-sm text-gray-500">
+                                                            Check #{request.checkNumber}
+                                                        </span>
+                                                    )}
+                                                    {request.isTransactionComplete ? (
+                                                        <span className="text-sm font-medium text-emerald-600">Complete</span>
+                                                    ) : (
+                                                        <span className="text-sm font-medium text-amber-600">Pending</span>
+                                                    )}
+                                                </div>
+                                                <div className="flex items-center gap-2 text-sm text-gray-500">
+                                                    <span>{date}</span>
+                                                    <span className="text-gray-400">•</span>
+                                                    <span>{time}</span>
+                                                </div>
+                                            </div>
+
+                                            {/* Amount Details */}
+                                            <div className="flex items-center gap-8">
+                                                <div className="flex flex-col items-end">
+                                                    <span className="text-sm text-gray-500">Payout</span>
+                                                    <span className="font-semibold text-gray-900">${request.customerPayout.toLocaleString()}</span>
+                                                </div>
+                                                <div className="flex flex-col items-end min-w-[100px]">
+                                                    <span className="text-sm text-gray-500">Profit</span>
+                                                    <span className="font-semibold text-emerald-600">${request.profit.toLocaleString()}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="ml-6">
+                                            <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-blue-500 transition-colors duration-200" />
+                                        </div>
+                                    </div>
+                                </Link>
+                            )
+                        })
+                    ) : (
+                        <div className="flex flex-col items-center justify-center py-12 text-center">
+                            <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                                <Search className="h-6 w-6 text-gray-400" />
+                            </div>
+                            <span className="text-gray-600 font-medium">No transactions found</span>
+                            <span className="text-sm text-gray-500 mt-1">
+                                {searchTerm 
+                                    ? "Try adjusting your search terms" 
+                                    : "Try adjusting your filters"}
+                            </span>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    )
+}

@@ -2,8 +2,9 @@
 import { db } from '@/lib/firebase/init';
 import { push, ref, update } from 'firebase/database';
 import { useRouter } from 'next/navigation';
-import { Building2, User, Percent, ArrowLeft } from 'lucide-react';
+import { Building2, User, Percent, ArrowLeft, Plus, PlusIcon } from 'lucide-react';
 import React, { useState } from 'react';
+import Link from 'next/link';
 
 export default function CompanyNew() {
     const router = useRouter();
@@ -11,8 +12,8 @@ export default function CompanyNew() {
     const [formData, setFormData] = useState({
         companyName: '',
         contactName: '',
-        multiplierPercentage: '',
-        kickbackPercentage: ''
+        multiplierPercentage: '0',
+        kickbackPercentage: '0'
     });
 
     const handleChange = (e) => {
@@ -49,19 +50,33 @@ export default function CompanyNew() {
         await update(ref(db, 'companies/' + response.key), {
             id: response.key
         });
-        router.push('/companies/' + response.key);
+        router.push('/company?id=' + response.key.slice(1));
     };
 
     const inputClassName = "w-full px-3 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all text-gray-900 bg-white placeholder-gray-400";
 
     return (
-        <div>
-            <div className="max-w-2xl mx-auto px-4 py-8">
-                <div className="bg-white rounded-xl shadow-sm p-8">
-                    <h1 className="text-2xl font-semibold text-gray-900 mb-6">
-                        Add New Company
-                    </h1>
+        <div className="mx-auto px-6 pb-6 pt-16">
+            <div className="flex flex-row items-center justify-between gap-2 pb-2">
+                <div className="flex flex-row">
+                    <button
+                        onClick={() => router.back()}
+                        className="inline-flex items-center text-gray-600 hover:text-gray-900"
+                        >
+                        <ArrowLeft className="h-5 w-5 mr-2" />
+                    </button>
+                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">New Company</h1>
+                </div>
 
+                {/* <Link
+                    href="/company/new"
+                    className="flex-1 sm:flex-none bg-green-600 text-white px-3 py-2 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center justify-center gap-2 text-sm"
+                >
+                    <PlusIcon size={18} />
+                    <span>New Company</span>
+                </Link> */}
+            </div>
+                <div className="bg-white rounded-xl shadow-sm p-8">
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
                             <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
@@ -148,6 +163,5 @@ export default function CompanyNew() {
                     </form>
                 </div>
             </div>
-        </div>
     );
 }

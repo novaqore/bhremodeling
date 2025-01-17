@@ -1,7 +1,9 @@
 "use client"
 import { auth, db } from '@/lib/firebase/init'
-import { push, ref } from 'firebase/database'
+import { push, ref, update } from 'firebase/database'
 import { Building2, DollarSign, Percent, Wallet, AlertTriangle, Ban, CheckCheck, ArrowLeftRight } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import RequestNewDetailsKickback from '../Request/RequestNewDetailsKickback'
 
 export default function RequestsNewDetails({ 
     companies, 
@@ -12,7 +14,7 @@ export default function RequestsNewDetails({
     checkNumber,
     cashDate
 }) {
-
+    const router = useRouter()
     const getCurrentMultiplier = () => {
         if (!selectedCompany || !companies[selectedCompany]) return 0
         
@@ -77,7 +79,7 @@ export default function RequestsNewDetails({
     const handleSendRequest = async ()=> {
         const request_key = await push(ref(db, 'requests')).key
         const request = {
-            id: request_key,
+            id: request_key.slice(1),
             created_at: new Date().getTime(),
             submitted_by: auth.currentUser.uid,
             company_id: selectedCompany,
@@ -89,9 +91,11 @@ export default function RequestsNewDetails({
             processingFee,
             kickbackFee,
             bankFee,
+            customerPayout,
             profit,
         }
-        console.log(request)
+        update(ref(db, `requests/${request_key}`), request)
+        router.push('/transaction?id='+ request_key.slice(1))
     }
 
     return (
@@ -132,22 +136,7 @@ export default function RequestsNewDetails({
                                 </span>
                             </div>
 
-                            <div className="flex justify-between items-center p-4 bg-purple-50 rounded-lg border border-purple-200">
-                                    <div className="flex items-center gap-2">
-                                        <ArrowLeftRight className="w-5 h-5 text-purple-600" />
-                                        <div className="flex flex-col">
-                                            <span className="font-medium text-gray-900">
-                                                Kickback to {companies[selectedCompany]?.companyName}
-                                            </span>
-                                            <span className="text-sm text-purple-600">
-                                                ({(getCurrentKickback() * 100).toFixed(1)}% of profit)
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <span className="text-lg font-semibold text-purple-600">
-                                        ${kickbackFee.toFixed(2)}
-                                    </span>
-                                </div>
+                            <RequestNewDetailsKickback companies={companies} selectedCompany={selectedCompany} selectedSubCompany={selectedSubCompany} kickbackFee={kickbackFee} />
 
                             {/* Fee Status */}
                             {feeStatus && (

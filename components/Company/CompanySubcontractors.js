@@ -8,10 +8,9 @@ export default function CompanySubcontractors({ company }) {
 
     return (
         <>
-            <div className="mt-8 bg-white rounded-2xl p-8 shadow-sm">
+            <div className="bg-white rounded-2xlshadow-sm">
                 <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-semibold text-gray-900">Subcontractors</h2>
-                    <CompanySubcontractorAdd />
+                    <CompanySubcontractorAdd company={company} />
                 </div>
 
                 <div className="space-y-3">
@@ -22,7 +21,7 @@ export default function CompanySubcontractors({ company }) {
                                     <h3 className="font-medium text-gray-900">{sub.name}</h3>
                                 </div>
                                 <div className="flex gap-2">
-                                    <CompanySubcontractorsEdit sub={{...sub, id: key}} />
+                                    <CompanySubcontractorsEdit sub={sub} />
                                     <CompanySubcontractorsDelete sub={{...sub, id: key}} />
                                 </div>
                             </div>

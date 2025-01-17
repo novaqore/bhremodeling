@@ -1,12 +1,13 @@
 "use client"
-import { useParams } from 'next/navigation'
+import { useParams, useSearchParams } from 'next/navigation'
 import { X, Percent } from 'lucide-react'
 import { db } from '@/lib/firebase/init'
 import { ref, update } from 'firebase/database'
 import { useState } from 'react'
 
 export default function CompanySubcontractorsEdit({ sub }) {
-    const params = useParams()
+    const searchParams = useSearchParams()
+        const companyId = searchParams.get('id')
     const [showEditModal, setShowEditModal] = useState(false)
     const [tempSub, setTempSub] = useState({
         name: '',
@@ -35,14 +36,17 @@ export default function CompanySubcontractorsEdit({ sub }) {
 
     const handleSaveSub = async () => {
         const subDetails = {
-            ...tempSub,
-            multiplier: tempSub.multiplier ? Math.round(parseFloat(tempSub.multiplier) * 10) / 1000 : 0,
-            kickback: tempSub.kickback ? Math.round(parseFloat(tempSub.kickback) * 10) / 1000 : 0,
-            id: sub.id
+            name: tempSub.name,
+            multiplier: tempSub.multiplier ? parseFloat(tempSub.multiplier) / 100 : 0,
+            kickback: tempSub.kickback ? parseFloat(tempSub.kickback) / 100 : 0,
         }
-        
-        await update(ref(db, `companies/${params.id}/subcontractors/${sub.id}`), subDetails)
-        setShowEditModal(false)
+        console.log('Saving:', subDetails)
+        try {
+            await update(ref(db, `companies/-${companyId}/subcontractors/${sub.id}`), subDetails)
+            setShowEditModal(false)
+        } catch (error) {
+            console.error('Error saving:', error)
+        }
     }
 
     return (

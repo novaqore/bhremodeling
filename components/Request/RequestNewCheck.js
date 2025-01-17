@@ -1,21 +1,16 @@
 'use client'
-
 import { CheckCircle, Calendar } from 'lucide-react'
 import { useEffect } from 'react'
 
-export default function RequestsNewCheckAmount({checkAmount, setCheckAmount, checkNumber, setCheckNumber, cashDate, setCashDate}) {
-    // Get today's date in YYYY-MM-DD format
+export default function RequestNewCheckAmount({checkAmount, setCheckAmount, checkNumber, setCheckNumber, cashDate, setCashDate}) {
     const today = new Date().toISOString().split('T')[0];
 
-    // Set initial date when component mounts
     useEffect(() => {
-        if (!cashDate) {
-            setCashDate(today)
-        }
+        if (!cashDate) setCashDate(today)
     }, [])
 
     return (
-        <div className="max-w-md mx-auto">
+        <div className="mx-auto">
             <div className="bg-gradient-to-r from-blue-50 to-gray-50 p-6 rounded-lg border-2 border-gray-200 shadow-md">
                 <div className="flex justify-between items-center mb-4">
                     <label className="text-sm font-medium text-gray-900">

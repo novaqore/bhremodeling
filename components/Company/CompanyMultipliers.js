@@ -1,14 +1,15 @@
 "use client"
-import { useParams } from 'next/navigation'
+import { useParams, useSearchParams } from 'next/navigation'
 import { Percent } from 'lucide-react'
 import { ref, update } from 'firebase/database'
 import { db } from '@/lib/firebase/init'
 import { useState, useEffect } from 'react'
 
 export default function CompanyMultipliers({ company }) {
-    const params = useParams()
-    const [multiplier, setMultiplier] = useState('')
-    const [kickback, setKickback] = useState('')
+    const searchParams = useSearchParams()
+    const companyId = searchParams.get('id')
+    const [multiplier, setMultiplier] = useState('0')
+    const [kickback, setKickback] = useState('0')
 
     useEffect(() => {
         if (company) {
@@ -21,7 +22,7 @@ export default function CompanyMultipliers({ company }) {
     const handleUpdate = (field, value) => {
         // Round to 3 decimal places to avoid floating point issues
         const number = value ? Math.round(parseFloat(value) * 10) / 1000 : 0
-        update(ref(db, `companies/${params.id}`), { [field]: number })
+        update(ref(db, `companies/${company.id}`), { [field]: number })
     }
 
     const handleInput = (e, field, setter) => {

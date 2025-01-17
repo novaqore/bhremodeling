@@ -1,26 +1,16 @@
 "use client"
 
-import { useEffect, useState } from 'react'
-import { db } from '@/lib/firebase/init'
-import { ref, onValue } from 'firebase/database'
+import { useState } from 'react'
 import { Building2 } from 'lucide-react'
 
-export default function RequestsNewCompanySelect({selectedCompany, setSelectedCompany, selectedSubCompany, setSelectedSubCompany, companies, setCompanies}) {
+export default function RequestsNewCompanySelect({selectedCompany, setSelectedCompany, selectedSubCompany, setSelectedSubCompany, companies}) {
     const [isOpen, setIsOpen] = useState(false)
     const [searchTerm, setSearchTerm] = useState('')
 
-    useEffect(() => {
-        const companiesRef = ref(db, 'companies')
-        const unsubscribe = onValue(companiesRef, (snapshot) => {
-            if (snapshot.exists()) {
-                setCompanies(snapshot.val())
-            }
-        })
-        return () => unsubscribe()
-    }, [])
-
+    if(!companies) return <div>Loading...</div>
+    
     const filteredCompanies = Object.entries(companies).filter(([_, company]) => 
-        company.companyName.toLowerCase().includes(searchTerm.toLowerCase())
+        company && company.companyName && company.companyName.toLowerCase().includes(searchTerm.toLowerCase())
     )
 
     return (
@@ -39,7 +29,9 @@ export default function RequestsNewCompanySelect({selectedCompany, setSelectedCo
                         className="w-full px-3 py-2.5 text-left rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                     >
                         <span className="block truncate">
-                            {selectedCompany ? companies[selectedCompany]?.companyName : 'Select company...'}
+                            {selectedCompany && companies[selectedCompany]?.companyName 
+                                ? companies[selectedCompany].companyName 
+                                : 'Select company...'}
                         </span>
                     </button>
                     

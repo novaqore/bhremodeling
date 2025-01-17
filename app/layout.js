@@ -1,5 +1,5 @@
 import Header from "@/components/Header/Header";
-import AppProvider from "@/contexts/AppContext";
+import AuthProvider from "@/contexts/auth";
 import "@/styles/globals.css";
 
 
@@ -12,12 +12,12 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className="bg-gray-100">
-        <AppProvider>
+        <AuthProvider>
         <Header />
-        <main className="mx-auto pt-10">
+        <main>
           {children}
         </main>
-        </AppProvider>
+        </AuthProvider>
       </body>
     </html>
   )

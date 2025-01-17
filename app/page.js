@@ -1,20 +1,16 @@
 "use client"
-import { useApp } from "@/contexts/AppContext"
+import Dashboard from "@/components/Dashboard/Dashboard"
+import Loading from "@/components/Loading/Loading"
+import Login from "@/components/Login/Login"
+import { useAuth } from "@/contexts/auth"
 import { useRouter } from "next/navigation"
 import { useEffect } from "react"
 
 export default function Home() {
-const router = useRouter()
-const { user } = useApp()
+  const router = useRouter()
+  const { user, loading } = useAuth()
 
-  useEffect(()=>{
-    if(!user) router.push('/login')
-    if(user) router.push('/dashboard')
-  }, [])
-
-  return (
-    <div className="py-12">
-      {/* <h1 className="text-3xl font-bold">Welcome to the Home Page</h1> */}
-    </div>
-  )
+  if(loading) return <Loading />
+  if(!user) return <Login />
+  if(user) return <Dashboard />
 }

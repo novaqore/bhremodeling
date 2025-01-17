@@ -13,7 +13,7 @@ export default function CompanyInfo({ company }) {
 
     return (
         <div className="rounded-2xl p-8 shadow-sm bg-blue-50">
-                        <h2 className="text-xl font-semibold text-gray-900 mb-6">Company Information</h2>
+                        {/* <h2 className="text-xl font-semibold text-gray-900 mb-6">Company Information</h2> */}
                         <div className="space-y-6">
                             <div>
                                 <label className="flex items-center gap-2 text-sm font-medium text-gray-900 mb-2">
