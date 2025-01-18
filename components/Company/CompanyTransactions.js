@@ -1,7 +1,7 @@
 'use client'
 
 import { useSearchParams } from 'next/navigation'
-import { ArrowRight, CheckCircle2, Clock, Search, ArrowUpDown } from 'lucide-react'
+import { ArrowRight, Search, ArrowUpDown, Hash, CircleDollarSign, Download, ArrowLeftRight, LayoutGrid } from 'lucide-react'
 import Link from 'next/link'
 import { useState, useMemo } from 'react'
 
@@ -12,7 +12,7 @@ export default function CompanyTransactions({ requests }) {
     // State management
     const [searchTerm, setSearchTerm] = useState('')
     const [activeFilter, setActiveFilter] = useState('all')
-    const [sortOrder, setSortOrder] = useState('newest') // 'newest' or 'oldest'
+    const [sortOrder, setSortOrder] = useState('newest')
 
     // Filter, search, and sort logic
     const filteredTransactions = useMemo(() => {
@@ -20,8 +20,16 @@ export default function CompanyTransactions({ requests }) {
 
         const filtered = Object.entries(requests).filter(([requestId, request]) => {
             // Filter by status
-            if (activeFilter === 'completed' && !request.isTransactionComplete) return false
-            if (activeFilter === 'pending' && request.isTransactionComplete) return false
+            if (activeFilter === 'received' && !request.checkReceivedDate) return false
+            if (activeFilter === 'dispensed' && !request.cashDispensedDate) return false
+            if (activeFilter === 'cashed' && !request.checkCashedDate) return false
+            if (activeFilter === 'kickback' && !request.kickbackPaidDate) return false
+            if (activeFilter === 'completed' && !(
+                request.checkReceivedDate && 
+                request.cashDispensedDate && 
+                request.checkCashedDate && 
+                ((Number(request.kickbackFee) > 0 && request.kickbackPaidDate) || Number(request.kickbackFee) <= 0)
+            )) return false
 
             // Search by ID or checkNumber
             const searchLower = searchTerm.toLowerCase()
@@ -60,10 +68,18 @@ export default function CompanyTransactions({ requests }) {
 
     // Filter button styling
     const getFilterButtonClass = (filterType) => {
-        const baseClasses = "px-3 py-1.5 rounded-md transition-colors duration-200"
+        const baseClasses = "px-3 py-1.5 rounded-md transition-colors duration-200 flex items-center gap-2"
+        const filterStyles = {
+            all: "bg-blue-50 text-blue-600",
+            received: "bg-yellow-50 text-yellow-600",
+            dispensed: "bg-green-50 text-green-600",
+            cashed: "bg-blue-50 text-blue-600", 
+            kickback: "bg-purple-50 text-purple-600",
+            completed: "bg-emerald-50 text-emerald-600"
+        }
         return `${baseClasses} ${
             activeFilter === filterType 
-                ? "bg-blue-50 text-blue-600 font-medium" 
+                ? filterStyles[filterType] + " font-medium" 
                 : "text-gray-600 hover:bg-gray-50"
         }`
     }
@@ -97,24 +113,48 @@ export default function CompanyTransactions({ requests }) {
                         </div>
                     </div>
                 </div>
-                <div className="flex gap-2 text-sm">
+                <div className="flex gap-2 text-sm overflow-x-auto pb-2">
                     <button 
                         onClick={() => setActiveFilter('all')}
                         className={getFilterButtonClass('all')}
                     >
+                        <LayoutGrid className="h-4 w-4" />
                         All Transactions
+                    </button>
+                    <button 
+                        onClick={() => setActiveFilter('received')}
+                        className={getFilterButtonClass('received')}
+                    >
+                        <Hash className="h-4 w-4" />
+                        Check Received
+                    </button>
+                    <button 
+                        onClick={() => setActiveFilter('dispensed')}
+                        className={getFilterButtonClass('dispensed')}
+                    >
+                        <CircleDollarSign className="h-4 w-4" />
+                        Cash Dispensed
+                    </button>
+                    <button 
+                        onClick={() => setActiveFilter('cashed')}
+                        className={getFilterButtonClass('cashed')}
+                    >
+                        <Download className="h-4 w-4" />
+                        Check Cashed
+                    </button>
+                    <button 
+                        onClick={() => setActiveFilter('kickback')}
+                        className={getFilterButtonClass('kickback')}
+                    >
+                        <ArrowLeftRight className="h-4 w-4" />
+                        Kickback Paid
                     </button>
                     <button 
                         onClick={() => setActiveFilter('completed')}
                         className={getFilterButtonClass('completed')}
                     >
+                        <ArrowRight className="h-4 w-4" />
                         Completed
-                    </button>
-                    <button 
-                        onClick={() => setActiveFilter('pending')}
-                        className={getFilterButtonClass('pending')}
-                    >
-                        Pending
                     </button>
                 </div>
             </div>
@@ -133,17 +173,26 @@ export default function CompanyTransactions({ requests }) {
                                 >
                                     <div className="flex items-center justify-between px-4 py-5 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors duration-200">
                                         <div className="flex items-center gap-6 flex-1">
-                                            {/* Status Icon */}
-                                            <div className="w-12">
-                                                {request.isTransactionComplete ? (
-                                                    <div className="h-8 w-8 rounded-full bg-emerald-50 flex items-center justify-center">
-                                                        <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-                                                    </div>
-                                                ) : (
-                                                    <div className="h-8 w-8 rounded-full bg-amber-50 flex items-center justify-center">
-                                                        <Clock className="h-5 w-5 text-amber-600" />
-                                                    </div>
-                                                )}
+                                            {/* Status Icons */}
+                                            <div className="flex gap-3">
+                                                <Hash 
+                                                    className={`h-5 w-5 ${request.checkReceivedDate ? 'text-yellow-500' : 'text-gray-300'}`}
+                                                />
+                                                <CircleDollarSign 
+                                                    className={`h-5 w-5 ${request.cashDispensedDate ? 'text-green-500' : 'text-gray-300'}`}
+                                                />
+                                                <Download 
+                                                    className={`h-5 w-5 ${request.checkCashedDate ? 'text-blue-500' : 'text-gray-300'}`}
+                                                />
+                                                <ArrowLeftRight 
+                                                    className={`h-5 w-5 ${
+                                                        Number(request.kickbackFee) <= 0 
+                                                            ? 'text-red-500' 
+                                                            : request.kickbackPaidDate 
+                                                                ? 'text-purple-500' 
+                                                                : 'text-gray-300'
+                                                    }`}
+                                                />
                                             </div>
 
                                             {/* Transaction Details */}
@@ -157,11 +206,6 @@ export default function CompanyTransactions({ requests }) {
                                                             Check #{request.checkNumber}
                                                         </span>
                                                     )}
-                                                    {request.isTransactionComplete ? (
-                                                        <span className="text-sm font-medium text-emerald-600">Complete</span>
-                                                    ) : (
-                                                        <span className="text-sm font-medium text-amber-600">Pending</span>
-                                                    )}
                                                 </div>
                                                 <div className="flex items-center gap-2 text-sm text-gray-500">
                                                     <span>{date}</span>
@@ -173,13 +217,19 @@ export default function CompanyTransactions({ requests }) {
                                             {/* Amount Details */}
                                             <div className="flex items-center gap-8">
                                                 <div className="flex flex-col items-end">
-                                                    <span className="text-sm text-gray-500">Payout</span>
-                                                    <span className="font-semibold text-gray-900">${request.customerPayout.toLocaleString()}</span>
+                                                    <span className="text-sm text-gray-500">Request Amount</span>
+                                                    <span className="font-semibold text-gray-900">
+                                                        ${(request.requestAmount || 0).toLocaleString()}
+                                                    </span>
                                                 </div>
-                                                <div className="flex flex-col items-end min-w-[100px]">
-                                                    <span className="text-sm text-gray-500">Profit</span>
-                                                    <span className="font-semibold text-emerald-600">${request.profit.toLocaleString()}</span>
-                                                </div>
+                                                {Number(request.kickbackFee) > 0 && (
+                                                    <div className="flex flex-col items-end min-w-[100px]">
+                                                        <span className="text-sm text-gray-500">Kickback</span>
+                                                        <span className="font-semibold text-purple-600">
+                                                            ${Number(request.kickbackFee).toLocaleString()}
+                                                        </span>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
 

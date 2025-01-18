@@ -1,10 +1,10 @@
 "use client";
 import { useState } from 'react';
-import { ArrowLeftRight } from 'lucide-react';
+import { ArrowLeftRight, CheckSquare } from 'lucide-react';
 import { ref, update } from 'firebase/database';
 import { db } from '@/lib/firebase/init';
 
-const TransactionTimelineKickback = ({ request, company }) => {
+const TransactionTimelineKickback = ({ request, company, complete }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState('');
 
@@ -40,19 +40,24 @@ const TransactionTimelineKickback = ({ request, company }) => {
                 onClick={() => hasKickback && setIsModalOpen(true)}
             >
                 <div className={`w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-200 ${
+                    complete ? 'bg-green-100 group-hover:bg-green-200' :
                     isNoKickback 
                         ? 'bg-gray-100' 
                         : isPending 
                             ? 'bg-gray-100 group-hover:bg-gray-200' 
                             : 'bg-blue-50 group-hover:bg-blue-100'
                 } ${hasKickback ? 'group-hover:scale-105' : ''}`}>
-                    <ArrowLeftRight className={`w-6 h-6 transition-all duration-200 ${
-                        isNoKickback 
-                            ? 'text-gray-400' 
-                            : isPending 
-                                ? 'text-gray-400 group-hover:scale-110' 
-                                : 'text-blue-500 group-hover:scale-110'
-                    }`} />
+                    {complete ? (
+                        <CheckSquare className="w-6 h-6 text-green-600 transition-all duration-200 group-hover:scale-110" />
+                    ) : (
+                        <ArrowLeftRight className={`w-6 h-6 transition-all duration-200 ${
+                            isNoKickback 
+                                ? 'text-gray-400' 
+                                : isPending 
+                                    ? 'text-gray-400 group-hover:scale-110' 
+                                    : 'text-blue-500 group-hover:scale-110'
+                        }`} />
+                    )}
                 </div>
                 <div className="flex-1 pt-2">
                     <h3 className={`font-medium text-gray-900 ${hasKickback ? 'group-hover:text-blue-600 transition-colors duration-200' : ''}`}>
@@ -84,7 +89,7 @@ const TransactionTimelineKickback = ({ request, company }) => {
                 </div>
             </div>
 
-            {/* Custom Modal */}
+            {/* Modal remains unchanged */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-white rounded-xl p-8 max-w-md w-full mx-4 shadow-2xl transform transition-all">

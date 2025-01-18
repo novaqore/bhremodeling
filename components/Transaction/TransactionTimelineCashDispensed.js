@@ -1,10 +1,10 @@
 "use client";
 import { useState } from 'react';
-import { CircleDollarSign } from 'lucide-react';
+import { CircleDollarSign, CheckSquare } from 'lucide-react';
 import { ref, update } from 'firebase/database';
 import { db } from '@/lib/firebase/init';
 
-const TransactionTimelineCashDispensed = ({ request, company }) => {
+const TransactionTimelineCashDispensed = ({ request, company, complete }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState('');
 
@@ -38,11 +38,16 @@ const TransactionTimelineCashDispensed = ({ request, company }) => {
                 onClick={() => setIsModalOpen(true)}
             >
                 <div className={`w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-200 group-hover:scale-105 ${
+                    complete ? 'bg-green-100 group-hover:bg-green-200' :
                     isPending ? 'bg-gray-100 group-hover:bg-gray-200' : 'bg-blue-50 group-hover:bg-blue-100'
                 }`}>
-                    <CircleDollarSign className={`w-6 h-6 transition-all duration-200 group-hover:scale-110 ${
-                        isPending ? 'text-gray-400' : 'text-blue-500'
-                    }`} />
+                    {complete ? (
+                        <CheckSquare className="w-6 h-6 text-green-600 transition-all duration-200 group-hover:scale-110" />
+                    ) : (
+                        <CircleDollarSign className={`w-6 h-6 transition-all duration-200 group-hover:scale-110 ${
+                            isPending ? 'text-gray-400' : 'text-blue-500'
+                        }`} />
+                    )}
                 </div>
                 <div className="flex-1 pt-2">
                     <h3 className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors duration-200">Cash Dispensed</h3>

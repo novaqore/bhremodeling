@@ -1,10 +1,10 @@
 "use client";
 import { useState, useEffect } from 'react';
-import { Calendar, AlertTriangle } from 'lucide-react';
+import { Calendar, AlertTriangle, CheckSquare } from 'lucide-react';
 import { ref, update } from 'firebase/database';
 import { db } from '@/lib/firebase/init';
 
-const TransactionTimelineCheckCashedDate = ({ request, company }) => {
+const TransactionTimelineCheckCashedDate = ({ request, company, complete }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState('');
     const [daysUntilCashable, setDaysUntilCashable] = useState(0);
@@ -50,11 +50,16 @@ const TransactionTimelineCheckCashedDate = ({ request, company }) => {
                 onClick={() => setIsModalOpen(true)}
             >
                 <div className={`w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-200 group-hover:scale-105 ${
+                    complete ? 'bg-green-100 group-hover:bg-green-200' :
                     isPending ? 'bg-gray-100 group-hover:bg-gray-200' : 'bg-blue-50 group-hover:bg-blue-100'
                 }`}>
-                    <Calendar className={`w-6 h-6 transition-all duration-200 group-hover:scale-110 ${
-                        isPending ? 'text-gray-400' : 'text-blue-500'
-                    }`} />
+                    {complete ? (
+                        <CheckSquare className="w-6 h-6 text-green-600 transition-all duration-200 group-hover:scale-110" />
+                    ) : (
+                        <Calendar className={`w-6 h-6 transition-all duration-200 group-hover:scale-110 ${
+                            isPending ? 'text-gray-400' : 'text-blue-500'
+                        }`} />
+                    )}
                 </div>
                 <div className="flex-1 pt-2">
                     <h3 className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors duration-200">Check Cashed Status</h3>
@@ -84,11 +89,11 @@ const TransactionTimelineCheckCashedDate = ({ request, company }) => {
                 </div>
             </div>
 
-            {/* Custom Modal */}
+            {/* Rest of the modal code remains the same */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    {/* Modal content remains unchanged */}
                     <div className="bg-white rounded-xl p-8 max-w-md w-full mx-4 shadow-2xl transform transition-all">
-                        {/* Header */}
                         <div className="flex justify-between items-center mb-6">
                             <div className="flex items-center gap-3">
                                 <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center">
@@ -107,7 +112,6 @@ const TransactionTimelineCheckCashedDate = ({ request, company }) => {
                             </button>
                         </div>
 
-                        {/* Warning Message When Not Eligible */}
                         {!isEligibleToCash && (
                             <div className="mb-6 flex items-center gap-2 text-orange-500 bg-orange-50 px-4 py-3 rounded-lg">
                                 <AlertTriangle className="w-5 h-5 flex-shrink-0" />
@@ -117,7 +121,6 @@ const TransactionTimelineCheckCashedDate = ({ request, company }) => {
                             </div>
                         )}
                         
-                        {/* Date Input Section */}
                         <div className="mb-8">
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Cashed Date
@@ -141,7 +144,6 @@ const TransactionTimelineCheckCashedDate = ({ request, company }) => {
                             )}
                         </div>
 
-                        {/* Actions */}
                         <div className="flex justify-end gap-3">
                             <button
                                 onClick={() => setIsModalOpen(false)}
