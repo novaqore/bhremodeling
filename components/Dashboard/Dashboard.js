@@ -2,7 +2,7 @@
 import { useAuth } from '@/contexts/auth';
 import { db } from '@/lib/firebase/init';
 import { onValue, ref, set } from 'firebase/database';
-import { Building2, PlusCircle, FileSpreadsheet, DollarSign, Building } from 'lucide-react'
+import { Building2, PlusCircle, FileSpreadsheet, DollarSign, Building, LineChart } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -117,15 +117,22 @@ export default function Dashboard() {
           </div>
           <div className="flex flex-wrap gap-2 w-full sm:w-auto">
             <Link
+              href="/report"
+              className="flex-1 sm:flex-none bg-purple-600 text-white px-3 py-2 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 flex items-center justify-center gap-2 text-sm"
+            >
+              <LineChart size={18} />
+              <span>Report</span>
+            </Link>
+            <Link
               href="/companies"
-              className="flex-1 sm:flex-none bg-green-600 text-white px-3 py-2 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 flex items-center justify-center gap-2 text-sm"
+              className="flex-1 sm:flex-none bg-yellow-600 text-white px-3 py-2 rounded-md hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 flex items-center justify-center gap-2 text-sm"
             >
               <Building2 size={18} />
               <span>Companies</span>
             </Link>
             <Link
               href="/request/new"
-              className="flex-1 sm:flex-none bg-blue-600 text-white px-3 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center justify-center gap-2 text-sm"
+              className="flex-1 sm:flex-none bg-green-600 text-white px-3 py-2 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center justify-center gap-2 text-sm"
             >
               <PlusCircle size={18} />
               <span>New Request</span>
