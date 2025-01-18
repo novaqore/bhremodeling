@@ -33,21 +33,15 @@ const TransactionTimelineCheckCashedDate = ({ request, company }) => {
     }, [request.cashDate]);
 
     const handleDateSelect = (date) => {
-        const selectedDateTime = new Date(date);
-        const cashDateTime = new Date(request.cashDate);
-
-        if (selectedDateTime < cashDateTime) {
-            return; // Don't allow selection of dates before cashDate
-        }
-
         setSelectedDate(date);
         update(ref(db, `requests/-${request.id}`), {
-            checkCashedDate: date
-        })
+            checkCashedDate: date || null
+        });
         setIsModalOpen(false);
     };
 
     const isPending = !request.checkCashedDate;
+    const isEligibleToCash = daysUntilCashable <= 0;
 
     return (
         <>
@@ -112,6 +106,16 @@ const TransactionTimelineCheckCashedDate = ({ request, company }) => {
                                 <span className="text-2xl text-gray-400 hover:text-gray-600">&times;</span>
                             </button>
                         </div>
+
+                        {/* Warning Message When Not Eligible */}
+                        {!isEligibleToCash && (
+                            <div className="mb-6 flex items-center gap-2 text-orange-500 bg-orange-50 px-4 py-3 rounded-lg">
+                                <AlertTriangle className="w-5 h-5 flex-shrink-0" />
+                                <span className="text-sm">
+                                    This check is not eligible to be cashed until {new Date(request.cashDate).toLocaleDateString()}
+                                </span>
+                            </div>
+                        )}
                         
                         {/* Date Input Section */}
                         <div className="mb-8">
@@ -120,12 +124,15 @@ const TransactionTimelineCheckCashedDate = ({ request, company }) => {
                             </label>
                             <input
                                 type="datetime-local"
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                                    !isEligibleToCash ? 'bg-gray-100 cursor-not-allowed opacity-50' : ''
+                                }`}
                                 onChange={(e) => setSelectedDate(e.target.value)}
                                 defaultValue={request.checkCashedDate || ''}
                                 min={request.cashDate}
+                                disabled={!isEligibleToCash}
                             />
-                            {request.cashDate && (
+                            {request.cashDate && isEligibleToCash && (
                                 <div className="mt-2 flex items-center gap-2 text-gray-600">
                                     <span className="text-sm">
                                         Must be on or after {new Date(request.cashDate).toLocaleDateString()}
@@ -144,8 +151,10 @@ const TransactionTimelineCheckCashedDate = ({ request, company }) => {
                             </button>
                             <button
                                 onClick={() => handleDateSelect(selectedDate)}
-                                className="px-5 py-2.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium flex items-center gap-2"
-                                disabled={!selectedDate || new Date(selectedDate) < new Date(request.cashDate)}
+                                className={`px-5 py-2.5 bg-blue-500 text-white rounded-lg transition-colors font-medium flex items-center gap-2 ${
+                                    !isEligibleToCash ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-600'
+                                }`}
+                                disabled={!isEligibleToCash}
                             >
                                 Update Cashed Date
                             </button>

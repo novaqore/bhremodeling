@@ -2,27 +2,28 @@
 import { useAuth } from '@/contexts/auth';
 import { db } from '@/lib/firebase/init';
 import { onValue, ref, set } from 'firebase/database';
-import { Building2, PlusCircle, FileSpreadsheet, DollarSign, Building, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Building2, PlusCircle, FileSpreadsheet, DollarSign, Building } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import DashboardRecentRequests from './DashboardRecentRequests';
 
 export default function Dashboard() {
   const { user, loading } = useAuth();
-  const [ request, setRequest ] = useState(null)
-  const [ loadingRequest, setLoadingRequest ] = useState(true)
+  const [ requests, setRequests ] = useState(null)
+  const [ loadingRequests, setLoadingRequests ] = useState(true)
   const [ requestStats, setRequestStats ] = useState({ total: 0, today: 0 })
   const [ kickbackStats, setKickbackStats ] = useState({ total: 0, today: 0 })
   const [ profitStats, setProfitStats ] = useState({ total: 0, today: 0 })
   const [ processedStats, setProcessedStats ] = useState({ total: 0, today: 0 })
 
   useEffect(() => {
-    setLoadingRequest(true)
-    const requestRef = ref(db, `requests`)
-    const unsubscribe = onValue(requestRef, (snapshot) => {
+    setLoadingRequests(true)
+    const requestsRef = ref(db, `requests`)
+    const unsubscribe = onValue(requestsRef, (snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.val()
-        setRequest(data)
+        setRequests(data)
         
         // Calculate request statistics
         const today = new Date()
@@ -71,8 +72,6 @@ export default function Dashboard() {
           return acc
         }, { total: 0, today: 0 })
         
-        setRequestStats(stats)
-        setKickbackStats(kickback)
         // Calculate processed statistics
         const processed = Object.values(data).reduce((acc, req) => {
           const checkAmount = Number(req.checkAmount) || 0
@@ -92,7 +91,7 @@ export default function Dashboard() {
         setKickbackStats(kickback)
         setProfitStats(profit)
         setProcessedStats(processed)
-        setLoadingRequest(false)
+        setLoadingRequests(false)
       }
     })
 
@@ -182,54 +181,11 @@ export default function Dashboard() {
         </div>
 
         {/* Recent Requests Section */}
-        <div className="bg-white rounded-lg shadow-sm">
-          <div className="p-4 border-b border-gray-200">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <FileSpreadsheet className="text-gray-600" size={18} />
-                <h2 className="text-lg font-medium text-gray-900">Recent Requests</h2>
-              </div>
-              <div className="flex items-center justify-end gap-3">
-                <button
-                  className="p-1.5 rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                  aria-label="Previous page"
-                >
-                  <ChevronLeft size={18} />
-                </button>
-                <span className="text-sm text-gray-600">Page 1</span>
-                <button
-                  className="p-1.5 rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                  aria-label="Next page"
-                >
-                  <ChevronRight size={18} />
-                </button>
-              </div>
-            </div>
-          </div>
-          <div className="divide-y divide-gray-200">
-            {request && Object.entries(request).map(([id, req]) => (
-              <Link 
-                key={id}
-                href={`/transaction?id=${id.slice(1)}`}
-                className="p-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 hover:bg-gray-50 cursor-pointer"
-              >
-                <div>
-                  <p className="font-medium text-gray-900">{req.company_id}</p>
-                  <p className="text-sm text-gray-600">{new Date(req.created_at).getTime()}</p>
-                </div>
-                <div className="sm:text-right">
-                  <p className="font-medium text-gray-900">{formatCurrency(req.requestAmount || 0)}</p>
-                  <p className="text-sm text-gray-600">Check: {req.checkNumber || 'N/A'}</p>
-                </div>
-              </Link>
-            ))}
-            {(!request || Object.keys(request).length === 0) && (
-              <div className="p-4 text-center text-gray-500">
-                No requests found
-              </div>
-            )}
-          </div>
-        </div>
+        <DashboardRecentRequests 
+          requests={requests}
+          formatCurrency={formatCurrency}
+          loadingRequests={loadingRequests}
+        />
     </div>
   )
 }
