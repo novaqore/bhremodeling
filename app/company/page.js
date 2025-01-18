@@ -11,7 +11,9 @@ import {
   ChartBar,
   Settings,
   ArrowRight,
-  Percent
+  Percent,
+  PieChart,
+  LineChart
 } from 'lucide-react'
 import Link from 'next/link'
 import CompanyInfo from '@/components/Company/CompanyInfo'
@@ -92,8 +94,8 @@ export default function Company() {
                         href={`/company/stats?id=${companyId}`}
                         className="bg-yellow-600 text-white px-3 py-2 rounded-md hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center justify-center gap-2 text-sm"
                     >
-                        <ChartBar size={18} />
-                        <span className="hidden sm:inline">Stats</span>
+                        <LineChart size={18} />
+                        <span className="hidden sm:inline">Financial Stats</span>
                     </Link>
                     <Link
                         href={`/request/new?id=${companyId}`}
