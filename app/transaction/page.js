@@ -7,6 +7,8 @@ import { db } from '@/lib/firebase/init';
 import Loading from '@/components/Loading/Loading';
 import TransactionDetails from '@/components/Transaction/TransactionDetails';
 import TransactionTimeline from '@/components/Transaction/TransactionTimeline';
+import TransactionNotes from '@/components/Transaction/TransactionNotes';
+import TransactionDelete from '@/components/Transaction/TransactionDelete';
 
 const Request = () => {
     const searchParams = useSearchParams()
@@ -63,6 +65,12 @@ const Request = () => {
                 <div className="flex flex-col lg:flex-row gap-8">
                   <TransactionDetails request={request} company={company} />
                   <TransactionTimeline request={request} />
+                </div>
+                <div className='mt-8'>
+                  <TransactionNotes request={request} />
+                </div>
+                <div className='flex justify-center mt-4'>
+                  <TransactionDelete request={request} />
                 </div>
             </div>
         </div>

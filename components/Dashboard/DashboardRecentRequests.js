@@ -1,5 +1,5 @@
 "use client"
-import { FileSpreadsheet, ArrowUpDown, LayoutGrid, ClipboardCheck, CircleDollarSign, Banknote, ArrowLeftRight, CheckCircle } from 'lucide-react'
+import { FileSpreadsheet, ArrowUpDown, LayoutGrid, ClipboardCheck, CircleDollarSign, Banknote, ArrowLeftRight, CheckCircle, Hash, Download } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { onValue, ref } from 'firebase/database'
@@ -122,7 +122,7 @@ export default function DashboardRecentRequests({ requests, formatCurrency, load
                     : 'hover:bg-gray-100 text-gray-600'
                   }`}
                 >
-                  <ClipboardCheck size={16} />
+                  <Hash size={16} />
                   <span>Received</span>
                 </button>
                 <button
@@ -144,7 +144,7 @@ export default function DashboardRecentRequests({ requests, formatCurrency, load
                     : 'hover:bg-gray-100 text-gray-600'
                   }`}
                 >
-                  <Banknote size={16} />
+                  <Download size={16} />
                   <span>Cashed</span>
                 </button>
                 <button
@@ -192,7 +192,7 @@ export default function DashboardRecentRequests({ requests, formatCurrency, load
                 <div className="flex items-center justify-between sm:justify-start sm:gap-3 mb-1">
                   <p className="font-medium text-gray-900 truncate">{getCompanyName(req.company_id)}</p>
                   <div className="flex items-center gap-3 sm:hidden">
-                    <ClipboardCheck 
+                    <Hash 
                       size={15} 
                       className={req.checkReceivedDate ? 'text-yellow-500' : 'text-gray-300'} 
                     />
@@ -200,7 +200,7 @@ export default function DashboardRecentRequests({ requests, formatCurrency, load
                       size={15} 
                       className={req.cashDispensedDate ? 'text-green-500' : 'text-gray-300'} 
                     />
-                    <Banknote 
+                    <Download 
                       size={15} 
                       className={req.checkCashedDate ? 'text-blue-500' : 'text-gray-300'} 
                     />
@@ -219,7 +219,7 @@ export default function DashboardRecentRequests({ requests, formatCurrency, load
                 <div className="flex items-center justify-between sm:justify-start gap-6">
                   <p className="text-sm text-gray-600">{formatDateTime(req.created_at)}</p>
                   <div className="hidden sm:flex items-center gap-3">
-                    <ClipboardCheck 
+                    <Hash 
                       size={16} 
                       className={req.checkReceivedDate ? 'text-yellow-500' : 'text-gray-300'} 
                     />
@@ -227,7 +227,7 @@ export default function DashboardRecentRequests({ requests, formatCurrency, load
                       size={16} 
                       className={req.cashDispensedDate ? 'text-green-500' : 'text-gray-300'} 
                     />
-                    <Banknote 
+                    <Download 
                       size={16} 
                       className={req.checkCashedDate ? 'text-blue-500' : 'text-gray-300'} 
                     />
@@ -246,7 +246,7 @@ export default function DashboardRecentRequests({ requests, formatCurrency, load
               </div>
               <div className="mt-2 sm:mt-0 sm:ml-4 sm:text-right flex sm:flex-col items-center sm:items-end justify-between">
                 <p className="font-medium text-gray-900">{formatCurrency(req.requestAmount || 0)}</p>
-                <p className="text-sm text-gray-600">Check: {req.checkNumber || 'N/A'}</p>
+                <p className="text-sm text-gray-600">Check #: {req.checkNumber || 'N/A'}</p>
               </div>
             </Link>
           ))}
