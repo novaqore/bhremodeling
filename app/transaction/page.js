@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { onValue, ref, set } from 'firebase/database';
+import { onValue, ref } from 'firebase/database';
 import { db } from '@/lib/firebase/init';
 import Loading from '@/components/Loading/Loading';
 import TransactionDetails from '@/components/Transaction/TransactionDetails';
