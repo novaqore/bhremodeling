@@ -1,10 +1,19 @@
 "use client";
 
 import { FileSpreadsheet } from "lucide-react";
-import html2pdf from 'html2pdf.js';
 import { format } from 'date-fns';
+import { useState, useEffect } from 'react';
 
 const ReportDownloadSpreadsheet = ({ filteredRequests }) => {
+    const [html2pdf, setHtml2pdf] = useState(null);
+
+    useEffect(() => {
+        // Dynamically import html2pdf only on client side
+        import('html2pdf.js').then(module => {
+            setHtml2pdf(() => module.default);
+        });
+    }, []);
+
     const calculateTotals = () => {
         return Object.values(filteredRequests).reduce(
             (acc, request) => {
@@ -31,7 +40,9 @@ const ReportDownloadSpreadsheet = ({ filteredRequests }) => {
         }).format(value);
     };
 
-    const handleDownload = () => {
+    const handleDownload = async () => {
+        if (!html2pdf) return;
+
         const totals = calculateTotals();
         const totalExpenses = totals.bankFee + totals.kickbackFee;
         const netProfit = totals.totalProcessed - totals.customerPayout - totalExpenses;
@@ -95,6 +106,7 @@ const ReportDownloadSpreadsheet = ({ filteredRequests }) => {
                     <h2 style="font-size: 18px; padding-bottom: 10px; border-bottom: 2px solid #eee;">Transaction Details</h2>
                     <table style="width: 100%; border-collapse: collapse;">
                         ${Object.values(filteredRequests)
+                            .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
                             .map(request => `
                                 <tr>
                                     <td style="padding: 10px 0;">
