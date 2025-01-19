@@ -166,7 +166,7 @@ export default function Dashboard() {
             <h3 className="text-sm text-gray-500">Total Requests</h3>
         </div>
         <div>
-            <p className="text-xl text-gray-800">{requestStats.total}</p>
+            <p className="text-2xl text-gray-800">{requestStats.total}</p>
             <p className="text-xs text-green-600 mt-1">
                 +{requestStats.today} today
             </p>
@@ -180,7 +180,7 @@ export default function Dashboard() {
             <h3 className="text-sm text-gray-500">Total Processed</h3>
         </div>
         <div>
-            <p className="text-xl text-gray-800">{formatCurrency(processedStats.total)}</p>
+            <p className="text-2xl text-gray-800">{formatCurrency(processedStats.total)}</p>
             <p className="text-xs text-green-600 mt-1">
                 +{formatCurrency(processedStats.today)} today
             </p>
@@ -194,7 +194,7 @@ export default function Dashboard() {
             <h3 className="text-sm text-gray-500">Kickback Payouts</h3>
         </div>
         <div>
-            <p className="text-xl text-gray-800">{formatCurrency(kickbackStats.total)}</p>
+            <p className="text-2xl text-gray-800">{formatCurrency(kickbackStats.total)}</p>
             <p className="text-xs text-purple-600 mt-1">
                 +{formatCurrency(kickbackStats.today)} today
             </p>
@@ -208,7 +208,7 @@ export default function Dashboard() {
             <h3 className="text-sm text-gray-500">Bank Fees</h3>
         </div>
         <div>
-            <p className="text-xl text-gray-800">{formatCurrency(bankFeeStats.total)}</p>
+            <p className="text-2xl text-gray-800">{formatCurrency(bankFeeStats.total)}</p>
             <p className="text-xs text-red-600 mt-1">
                 +{formatCurrency(bankFeeStats.today)} today
             </p>
@@ -222,7 +222,7 @@ export default function Dashboard() {
             <h3 className="text-sm text-gray-500">Profit</h3>
         </div>
         <div>
-            <p className="text-xl text-gray-800">{formatCurrency(profitStats.total)}</p>
+            <p className="text-2xl text-gray-800">{formatCurrency(profitStats.total)}</p>
             <p className="text-xs text-green-600 mt-1">
                 +{formatCurrency(profitStats.today)} today
             </p>
