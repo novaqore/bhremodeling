@@ -76,7 +76,7 @@ export default function Company() {
     if (!company) return <div className="p-8 text-gray-900">Loading...</div>
 
     return (
-        <div className="mx-auto px-4 sm:px-6 pb-6 pt-20">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 pb-6 pt-20">
             {/* Header */}
             <div className="flex flex-row items-center justify-between gap-2">
                 <div className="flex flex-row items-center">

@@ -78,7 +78,7 @@ export default function Profile() {
     }
 
     return (
-        <div className="mx-auto px-6 pb-6 pt-20">
+        <div className="mx-auto max-w-6xl px-6 pb-6 pt-20">
             <div className="flex flex-row items-center justify-between gap-2 pb-2">
                 <div className="flex flex-row">
                     <button

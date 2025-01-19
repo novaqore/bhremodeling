@@ -2,14 +2,15 @@
 import { useEffect, useState } from 'react'
 import { ArrowLeft } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import RequestsNewCompanySelect from '@/components/Requests/RequestsNewCompanySelect'
-import RequestsNewAmount from '@/components/Requests/RequestsNewAmount'
+import RequestNewCompanySelect from '@/components/Request/RequestNewCompanySelect'
+import RequestsNewAmount from '@/components/Request/RequestNewAmount'
 import RequestsNewCheck from '@/components/Request/RequestNewCheck'
-import RequestNewDetails from '@/components/Requests/RequestsNewDetails'
+import RequestNewDetails from '@/components/Request/RequestNewDetails'
 import Loading from '@/components/Loading/Loading'
 import { useAuth } from '@/contexts/auth'
 import { onValue, ref } from 'firebase/database'
 import { db } from '@/lib/firebase/init'
+import RequestsNotes from '@/components/Request/RequestNotes'
 
 export default function RequestsNew() {
     const { loading } = useAuth()
@@ -23,16 +24,17 @@ export default function RequestsNew() {
     const [checkAmount, setCheckAmount] = useState('')
     const [checkNumber, setCheckNumber] = useState('')
     const [cashDate, setCashDate] = useState('')
+    const [ notes, setNotes ] = useState('')
 
     useEffect(() => {
-            const companiesRef = ref(db, 'companies')
-            const unsubscribe = onValue(companiesRef, (snapshot) => {
-                if (snapshot.exists()) {
-                    setCompanies(snapshot.val())
-                }
-            })
-            return () => unsubscribe()
-        }, [])
+        const companiesRef = ref(db, 'companies')
+        const unsubscribe = onValue(companiesRef, (snapshot) => {
+            if (snapshot.exists()) {
+                setCompanies(snapshot.val())
+            }
+        })
+        return () => unsubscribe()
+    }, [])
 
     if(loading) return <Loading />
 
@@ -50,10 +52,10 @@ export default function RequestsNew() {
                 </div>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-x-6">
+            <div className="grid md:grid-cols-2 gap-6">
                 <div className="bg-white rounded-xl p-6 shadow-sm">
                     <div className="space-y-6">
-                        <RequestsNewCompanySelect 
+                        <RequestNewCompanySelect 
                             selectedCompany={selectedCompany} 
                             setSelectedCompany={setSelectedCompany} 
                             selectedSubCompany={selectedSubCompany}
@@ -84,7 +86,9 @@ export default function RequestsNew() {
                     checkAmount={checkAmount} 
                     checkNumber={checkNumber}
                     cashDate={cashDate}
+                    notes={notes}
                 />
+                <RequestsNotes notes={notes} setNotes={setNotes} />
             </div>
         </div>
     )

@@ -166,7 +166,7 @@ export default function CompanyStats() {
     };
 
     return (
-        <div className="mx-auto px-4 sm:px-6 lg:px-8 pb-6 pt-20">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 pb-6 pt-20">
             {/* Header Section */}
             <div className="flex flex-col items-start sm:flex-row sm:justify-between sm:items-center pb-6">
                 <div className="flex items-center gap-2">

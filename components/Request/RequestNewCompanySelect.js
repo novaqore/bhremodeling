@@ -86,7 +86,7 @@ export default function RequestsNewCompanySelect({selectedCompany, setSelectedCo
                         <option value="">None</option>
                         {Object.entries(companies[selectedCompany].subcontractors).map(([id, sub]) => (
                             <option key={id} value={id}>
-                                {sub.name} - {(parseFloat(sub.multiplier) * 100).toFixed(1)}%
+                                {sub.name}
                             </option>
                         ))}
                     </select>

@@ -25,7 +25,7 @@ export default function RequestNewCheckAmount({checkAmount, setCheckAmount, chec
                             type="date"
                             value={cashDate}
                             onChange={(e) => setCashDate(e.target.value)}
-                            min={today}
+                            // min={today}
                             className="text-sm border-b border-gray-300 bg-transparent focus:outline-none focus:border-blue-500 p-1"
                         />
                     </div>

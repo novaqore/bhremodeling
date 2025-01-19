@@ -16,6 +16,7 @@ export default function Dashboard() {
   const [ kickbackStats, setKickbackStats ] = useState({ total: 0, today: 0 })
   const [ profitStats, setProfitStats ] = useState({ total: 0, today: 0 })
   const [ processedStats, setProcessedStats ] = useState({ total: 0, today: 0 })
+  const [ bankFeeStats, setBankFeeStats ] = useState({ total: 0, today: 0 })
 
   useEffect(() => {
     setLoadingRequests(true)
@@ -87,10 +88,26 @@ export default function Dashboard() {
           return acc
         }, { total: 0, today: 0 })
 
+        // Calculate bank fee statistics
+        const bankFees = Object.values(data).reduce((acc, req) => {
+          const bankFee = Number(req.bankFee) || 0
+          acc.total += bankFee
+          
+          const requestDate = new Date(req.created_at)
+          requestDate.setHours(0, 0, 0, 0)
+          
+          if (requestDate.getTime() === today.getTime()) {
+            acc.today += bankFee
+          }
+          
+          return acc
+        }, { total: 0, today: 0 })
+
         setRequestStats(stats)
         setKickbackStats(kickback)
         setProfitStats(profit)
         setProcessedStats(processed)
+        setBankFeeStats(bankFees)
         setLoadingRequests(false)
       }
     })
@@ -110,7 +127,7 @@ export default function Dashboard() {
   if(loading || !user) return null;
 
   return (
-    <div className="mx-auto px-6 pb-6 pt-20">
+    <div className="mx-auto max-w-6xl px-6 pb-6 pt-20">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-2">
           <div className="flex flex-row items-center">
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Dashboard</h1>
@@ -141,7 +158,7 @@ export default function Dashboard() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
           <div className="bg-blue-50 rounded-lg shadow-sm p-4">
             <div className="flex items-center gap-2">
               <FileSpreadsheet className="text-gray-600" size={18} />
@@ -150,6 +167,17 @@ export default function Dashboard() {
             <p className="text-2xl sm:text-3xl font-semibold mt-2 text-gray-900">{requestStats.total}</p>
             <p className="text-sm text-green-600 mt-1">
               Today: +{requestStats.today}
+            </p>
+          </div>
+          
+          <div className="bg-yellow-50 rounded-lg shadow-sm p-4">
+            <div className="flex items-center gap-2">
+              <DollarSign className="text-gray-600" size={18} />
+              <h3 className="text-gray-700 text-sm font-medium">Total Processed</h3>
+            </div>
+            <p className="text-2xl sm:text-3xl font-semibold mt-2 text-gray-900">{formatCurrency(processedStats.total)}</p>
+            <p className="text-sm text-green-600 mt-1">
+              Today: {formatCurrency(processedStats.today)}
             </p>
           </div>
 
@@ -164,17 +192,18 @@ export default function Dashboard() {
             </p>
           </div>
 
-          <div className="bg-yellow-50 rounded-lg shadow-sm p-4">
+
+          <div className="bg-red-50 rounded-lg shadow-sm p-4">
             <div className="flex items-center gap-2">
               <DollarSign className="text-gray-600" size={18} />
-              <h3 className="text-gray-700 text-sm font-medium">Total Processed</h3>
+              <h3 className="text-gray-700 text-sm font-medium">Bank Fees</h3>
             </div>
-            <p className="text-2xl sm:text-3xl font-semibold mt-2 text-gray-900">{formatCurrency(processedStats.total)}</p>
+            <p className="text-2xl sm:text-3xl font-semibold mt-2 text-gray-900">{formatCurrency(bankFeeStats.total)}</p>
             <p className="text-sm text-green-600 mt-1">
-              Today: {formatCurrency(processedStats.today)}
+              Today: {formatCurrency(bankFeeStats.today)}
             </p>
           </div>
-
+          
           <div className="bg-green-50 rounded-lg shadow-sm p-4">
             <div className="flex items-center gap-2">
               <Building className="text-gray-600" size={18} />
@@ -185,6 +214,7 @@ export default function Dashboard() {
               Today: {formatCurrency(profitStats.today)}
             </p>
           </div>
+
         </div>
 
         {/* Recent Requests Section */}
