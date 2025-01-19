@@ -157,65 +157,78 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-          <div className="bg-blue-50 rounded-lg shadow-sm p-4">
-            <div className="flex items-center gap-2">
-              <FileSpreadsheet className="text-gray-600" size={18} />
-              <h3 className="text-gray-700 text-sm font-medium">Total Requests</h3>
-            </div>
-            <p className="text-2xl sm:text-3xl font-semibold mt-2 text-gray-900">{requestStats.total}</p>
-            <p className="text-sm text-green-600 mt-1">
-              Today: +{requestStats.today}
-            </p>
-          </div>
-          
-          <div className="bg-yellow-50 rounded-lg shadow-sm p-4">
-            <div className="flex items-center gap-2">
-              <DollarSign className="text-gray-600" size={18} />
-              <h3 className="text-gray-700 text-sm font-medium">Total Processed</h3>
-            </div>
-            <p className="text-2xl sm:text-3xl font-semibold mt-2 text-gray-900">{formatCurrency(processedStats.total)}</p>
-            <p className="text-sm text-green-600 mt-1">
-              Today: {formatCurrency(processedStats.today)}
-            </p>
-          </div>
-
-          <div className="bg-purple-50 rounded-lg shadow-sm p-4">
-            <div className="flex items-center gap-2">
-              <DollarSign className="text-gray-600" size={18} />
-              <h3 className="text-gray-700 text-sm font-medium">Kickback Payouts</h3>
-            </div>
-            <p className="text-2xl sm:text-3xl font-semibold mt-2 text-gray-900">{formatCurrency(kickbackStats.total)}</p>
-            <p className="text-sm text-green-600 mt-1">
-              Today: {formatCurrency(kickbackStats.today)}
-            </p>
-          </div>
-
-
-          <div className="bg-red-50 rounded-lg shadow-sm p-4">
-            <div className="flex items-center gap-2">
-              <DollarSign className="text-gray-600" size={18} />
-              <h3 className="text-gray-700 text-sm font-medium">Bank Fees</h3>
-            </div>
-            <p className="text-2xl sm:text-3xl font-semibold mt-2 text-gray-900">{formatCurrency(bankFeeStats.total)}</p>
-            <p className="text-sm text-green-600 mt-1">
-              Today: {formatCurrency(bankFeeStats.today)}
-            </p>
-          </div>
-          
-          <div className="bg-green-50 rounded-lg shadow-sm p-4">
-            <div className="flex items-center gap-2">
-              <Building className="text-gray-600" size={18} />
-              <h3 className="text-gray-700 text-sm font-medium">Profit</h3>
-            </div>
-            <p className="text-2xl sm:text-3xl font-semibold mt-2 text-gray-900">{formatCurrency(profitStats.total)}</p>
-            <p className="text-sm text-green-600 mt-1">
-              Today: {formatCurrency(profitStats.today)}
-            </p>
-          </div>
-
+  {/* Stats Cards */}
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+    {/* Total Requests Card */}
+    <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-100">
+        <div className="flex items-center gap-3 mb-3">
+            <FileSpreadsheet className="text-blue-600" size={18} />
+            <h3 className="text-sm text-gray-500">Total Requests</h3>
         </div>
+        <div>
+            <p className="text-xl text-gray-800">{requestStats.total}</p>
+            <p className="text-xs text-green-600 mt-1">
+                +{requestStats.today} today
+            </p>
+        </div>
+    </div>
+
+    {/* Total Processed Card */}
+    <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-100">
+        <div className="flex items-center gap-3 mb-3">
+            <DollarSign className="text-yellow-600" size={18} />
+            <h3 className="text-sm text-gray-500">Total Processed</h3>
+        </div>
+        <div>
+            <p className="text-xl text-gray-800">{formatCurrency(processedStats.total)}</p>
+            <p className="text-xs text-green-600 mt-1">
+                +{formatCurrency(processedStats.today)} today
+            </p>
+        </div>
+    </div>
+
+    {/* Kickback Payouts Card */}
+    <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-100">
+        <div className="flex items-center gap-3 mb-3">
+            <DollarSign className="text-purple-600" size={18} />
+            <h3 className="text-sm text-gray-500">Kickback Payouts</h3>
+        </div>
+        <div>
+            <p className="text-xl text-gray-800">{formatCurrency(kickbackStats.total)}</p>
+            <p className="text-xs text-purple-600 mt-1">
+                +{formatCurrency(kickbackStats.today)} today
+            </p>
+        </div>
+    </div>
+
+    {/* Bank Fees Card */}
+    <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-100">
+        <div className="flex items-center gap-3 mb-3">
+            <DollarSign className="text-red-600" size={18} />
+            <h3 className="text-sm text-gray-500">Bank Fees</h3>
+        </div>
+        <div>
+            <p className="text-xl text-gray-800">{formatCurrency(bankFeeStats.total)}</p>
+            <p className="text-xs text-red-600 mt-1">
+                +{formatCurrency(bankFeeStats.today)} today
+            </p>
+        </div>
+    </div>
+
+    {/* Profit Card */}
+    <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-100">
+        <div className="flex items-center gap-3 mb-3">
+            <Building className="text-green-600" size={18} />
+            <h3 className="text-sm text-gray-500">Profit</h3>
+        </div>
+        <div>
+            <p className="text-xl text-gray-800">{formatCurrency(profitStats.total)}</p>
+            <p className="text-xs text-green-600 mt-1">
+                +{formatCurrency(profitStats.today)} today
+            </p>
+        </div>
+    </div>
+</div>
 
         {/* Recent Requests Section */}
         <DashboardRecentRequests 
