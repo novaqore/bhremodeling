@@ -15,6 +15,7 @@ import {
     Legend,
     ArcElement,
 } from "chart.js";
+import CompanyReportDownload from "@/components/Company/CompanyReportDownload";
 
 // Register chart components
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend, ArcElement);
@@ -168,20 +169,23 @@ export default function CompanyStats() {
     return (
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 pb-6 pt-20">
             {/* Header Section */}
-            <div className="flex flex-col items-start sm:flex-row sm:justify-between sm:items-center pb-6">
+            <div className="flex flex-col gap-4 sm:gap-0 sm:flex-row sm:justify-between sm:items-center pb-6">
                 <div className="flex items-center gap-2">
-                    <button
-                        onClick={() => router.back()}
+                    <button 
+                        onClick={() => router.back()} 
                         className="inline-flex items-center text-gray-600 hover:text-gray-900"
                     >
-                        <ArrowLeft className="h-5 w-5 mr-2" />
+                        <ArrowLeft className="h-5 w-5" />
                     </button>
                     <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
                         Financial Stats: {company?.companyName || "Company"}
                     </h1>
                 </div>
+                <div className="flex justify-center">
+                    <CompanyReportDownload requests={requests} company={company} />
+                </div>
             </div>
-
+    
             {/* Totals Summary */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
                 {Object.entries(totals).map(([key, value]) => (
@@ -193,8 +197,7 @@ export default function CompanyStats() {
                     </div>
                 ))}
             </div>
-
-            {/* Visualizations */}
+    
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8">
                 <div className="bg-white shadow rounded-lg p-4">
                     <h2 className="text-lg font-semibold mb-4">Profit Breakdown</h2>

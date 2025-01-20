@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { onValue, ref } from 'firebase/database'
 import { db } from '@/lib/firebase/init'
+import KickbackPending from '../Kickback/KickbackPendingModal'
 
 const style = `
 .scrollbar-hide::-webkit-scrollbar {
@@ -169,6 +170,7 @@ export default function DashboardRecentRequests({ requests, formatCurrency, load
                   <CheckCircle size={16} />
                   <span>Completed</span>
                 </button>
+                {/* <KickbackPending requests={requests} formatCurrency={formatCurrency} /> */}
               </div>
             </div>
           </div>
